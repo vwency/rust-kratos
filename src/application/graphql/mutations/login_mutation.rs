@@ -13,7 +13,6 @@ impl LoginMutation {
     async fn login(&self, ctx: &Context<'_>, input: LoginInput) -> Result<AuthResponse> {
         let kratos_client = ctx.data_unchecked::<KratosClient>();
 
-        // ✅ Правильное извлечение cookie из контекста
         let cookie = ctx
             .data_opt::<Option<String>>()
             .and_then(|opt| opt.as_ref())
@@ -23,7 +22,6 @@ impl LoginMutation {
             .await
             .map_err(async_graphql::Error::new)?;
 
-        // ✅ Добавляем новые cookies в ответ
         if let Some(response_cookies) = ctx.data_opt::<ResponseCookies>() {
             for cookie_str in cookies {
                 response_cookies.add_cookie(cookie_str).await;

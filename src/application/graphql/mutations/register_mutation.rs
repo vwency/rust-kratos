@@ -13,7 +13,6 @@ impl RegisterMutation {
     async fn register(&self, ctx: &Context<'_>, input: RegisterInput) -> Result<AuthResponse> {
         let kratos_client = ctx.data_unchecked::<KratosClient>();
 
-        // Get cookie from context
         let cookie = ctx
             .data_opt::<Option<String>>()
             .and_then(|opt| opt.as_ref())

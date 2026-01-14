@@ -1,7 +1,6 @@
 services:
-  # PostgreSQL база данных для Kratos
   postgres-kratos:
-    image: postgres:16-alpine
+    image: docker.io/postgres:16-alpine
     container_name: kratos-postgres
     environment:
       POSTGRES_USER: kratos
@@ -19,9 +18,8 @@ services:
       timeout: 5s
       retries: 5
 
-  # Миграции базы данных Kratos
   kratos-migrate:
-    image: oryd/kratos:v1.0.0
+    image: docker.io/oryd/kratos:v1.0.0
     container_name: kratos-migrate
     environment:
       DSN: postgres://kratos:kratos_secret@postgres-kratos:5432/kratos?sslmode=disable
@@ -35,9 +33,8 @@ services:
         condition: service_healthy
     restart: on-failure
 
-  # Ory Kratos
   kratos:
-    image: oryd/kratos:v1.0.0
+    image: docker.io/oryd/kratos:v1.0.0
     container_name: kratos
     environment:
       DSN: postgres://kratos:kratos_secret@postgres-kratos:5432/kratos?sslmode=disable
@@ -56,7 +53,7 @@ services:
 
   # Mailslurper - для тестирования email
   mailslurper:
-    image: oryd/mailslurper:latest-smtps
+    image: docker.io/oryd/mailslurper:latest-smtps
     container_name: kratos-mailslurper
     ports:
       - "4436:4436"
