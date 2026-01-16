@@ -2,7 +2,7 @@ use crate::infrastructure::adapters::graphql::response_cookies::ResponseCookies;
 use crate::infrastructure::adapters::graphql::schema::AppSchema;
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use async_graphql::http::GraphiQLSource;
-use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
+use async_graphql_actix_web::GraphQLRequest;
 
 pub async fn graphql_handler(
     schema: web::Data<AppSchema>,
@@ -11,7 +11,6 @@ pub async fn graphql_handler(
 ) -> Result<HttpResponse> {
     let response_cookies = ResponseCookies::new();
 
-    // ✅ Извлекаем cookies из HTTP заголовка
     let cookie_header = http_req
         .headers()
         .get(actix_web::http::header::COOKIE)
@@ -20,10 +19,8 @@ pub async fn graphql_handler(
 
     let mut request = req.into_inner();
 
-    // ✅ Добавляем cookies из запроса в контекст
     request = request.data(cookie_header);
 
-    // ✅ Добавляем ResponseCookies для установки новых cookies
     request = request.data(response_cookies.clone());
 
     let response = schema.execute(request).await;
@@ -32,7 +29,6 @@ pub async fn graphql_handler(
 
     let mut http_response = HttpResponse::Ok();
 
-    // ✅ Устанавливаем все cookies в ответ
     for cookie in cookies {
         http_response.insert_header(("Set-Cookie", cookie));
     }

@@ -93,6 +93,10 @@ selfservice:
     registration:
       lifespan: 10m
       ui_url: http://localhost:8080/registration
+      after:
+        password:
+          hooks:
+            - hook: session
 
 log:
   level: debug

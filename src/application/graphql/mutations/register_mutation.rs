@@ -1,6 +1,5 @@
 use crate::application::usecases::auth::register::RegisterUseCase;
 use crate::domain::auth::inputs::RegisterInput;
-use crate::domain::auth::responses::AuthResponse;
 use crate::infrastructure::adapters::graphql::response_cookies::ResponseCookies;
 use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{Context, Object, Result};
@@ -10,7 +9,7 @@ pub struct RegisterMutation;
 
 #[Object]
 impl RegisterMutation {
-    async fn register(&self, ctx: &Context<'_>, input: RegisterInput) -> Result<AuthResponse> {
+    async fn register(&self, ctx: &Context<'_>, input: RegisterInput) -> Result<bool> {
         let kratos_client = ctx.data_unchecked::<KratosClient>();
 
         let cookie = ctx
@@ -18,7 +17,7 @@ impl RegisterMutation {
             .and_then(|opt| opt.as_ref())
             .map(|s| s.as_str());
 
-        let (auth_response, cookies) = RegisterUseCase::execute(input, kratos_client, cookie)
+        let cookies = RegisterUseCase::execute(input, kratos_client, cookie)
             .await
             .map_err(async_graphql::Error::new)?;
 
@@ -28,6 +27,6 @@ impl RegisterMutation {
             }
         }
 
-        Ok(auth_response)
+        Ok(true)
     }
 }

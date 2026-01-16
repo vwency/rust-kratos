@@ -1,5 +1,4 @@
 use crate::domain::auth::inputs::LoginInput;
-use crate::domain::auth::responses::AuthResponse;
 use crate::infrastructure::adapters::kratos::KratosClient;
 use tracing::{debug, error, info};
 
@@ -10,7 +9,7 @@ impl LoginUseCase {
         input: LoginInput,
         kratos_client: &KratosClient,
         cookie: Option<&str>,
-    ) -> Result<(AuthResponse, Vec<String>), String> {
+    ) -> Result<Vec<String>, String> {
         let identifier = input
             .email
             .as_ref()
@@ -32,7 +31,7 @@ impl LoginUseCase {
             }
         }
 
-        let (session, cookies) = match kratos_client
+        let cookies = match kratos_client
             .handle_login(identifier, &input.password, cookie)
             .await
         {
@@ -56,9 +55,6 @@ impl LoginUseCase {
 
         info!("Login successful for identifier={}", identifier);
 
-        Ok((
-            AuthResponse::from_kratos_identity(session.identity, String::new()),
-            cookies,
-        ))
+        Ok(cookies)
     }
 }
