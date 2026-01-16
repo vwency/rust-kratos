@@ -1,3 +1,6 @@
+use crate::infrastructure::adapters::kratos::flows::{
+    FlowResult, PostFlowResult, fetch_flow, post_flow,
+};
 use reqwest::StatusCode;
 use reqwest::{Client, header};
 use serde::{Deserialize, Serialize};
@@ -34,27 +37,14 @@ pub struct KratosSession {
     pub identity: KratosIdentity,
 }
 
-#[derive(Debug, Clone)]
-pub struct FlowResult {
-    pub flow: serde_json::Value,
-    pub csrf_token: String,
-    pub cookies: Vec<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct PostFlowResult {
-    pub data: serde_json::Value,
-    pub cookies: Vec<String>,
-}
-
 impl KratosClient {
     pub fn new(admin_url: String, public_url: String) -> Self {
         let client = Client::builder()
             .cookie_store(false)
             .redirect(reqwest::redirect::Policy::none())
-            .timeout(Duration::from_secs(30))
-            .connect_timeout(Duration::from_secs(10))
-            .pool_idle_timeout(Duration::from_secs(90))
+            .timeout(Duration::from_secs(120))
+            .connect_timeout(Duration::from_secs(30))
+            .pool_idle_timeout(Duration::from_secs(120))
             .pool_max_idle_per_host(10)
             .danger_accept_invalid_certs(true)
             .build()
@@ -74,202 +64,6 @@ impl KratosClient {
             }
         }
         false
-    }
-
-    async fn fetch_flow(
-        &self,
-        endpoint: &str,
-        cookie: Option<&str>,
-    ) -> Result<FlowResult, Box<dyn std::error::Error>> {
-        let url = format!("{}/self-service/{}/browser", self.public_url, endpoint);
-        let url = url.replace("localhost", "127.0.0.1");
-
-        let mut request = self.client.get(&url);
-
-        if let Some(cookie_value) = cookie {
-            request = request.header(header::COOKIE, cookie_value);
-        }
-
-        let response = request.send().await.map_err(|e| {
-            format!(
-                "Failed to connect to Kratos at {}: {}. Make sure Kratos is running.",
-                url, e
-            )
-        })?;
-
-        let status = response.status();
-        let flow_cookies: Vec<String> = response
-            .headers()
-            .get_all(header::SET_COOKIE)
-            .iter()
-            .filter_map(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-            .collect();
-
-        if status == StatusCode::SEE_OTHER || status == StatusCode::FOUND {
-            let location = response
-                .headers()
-                .get(header::LOCATION)
-                .and_then(|h| h.to_str().ok())
-                .ok_or("No redirect location found")?;
-
-            let flow_id = location
-                .split("flow=")
-                .nth(1)
-                .ok_or("Flow ID not found in redirect URL")?;
-
-            let flow_url = format!(
-                "{}/self-service/{}/flows?id={}",
-                self.public_url.replace("localhost", "127.0.0.1"),
-                endpoint,
-                flow_id
-            );
-
-            let mut flow_request = self.client.get(&flow_url);
-
-            if !flow_cookies.is_empty() {
-                flow_request = flow_request.header(header::COOKIE, flow_cookies.join("; "));
-            } else if let Some(cookie_value) = cookie {
-                flow_request = flow_request.header(header::COOKIE, cookie_value);
-            }
-
-            let flow_response = flow_request.send().await?;
-
-            if !flow_response.status().is_success() {
-                let status = flow_response.status();
-
-                let error_text = flow_response
-                    .text()
-                    .await
-                    .unwrap_or_else(|_| "Unknown error".to_string());
-
-                return Err(format!(
-                    "Failed to fetch {} flow (status {}): {}",
-                    endpoint, status, error_text
-                )
-                .into());
-            }
-
-            let flow: serde_json::Value = flow_response
-                .json()
-                .await
-                .map_err(|e| format!("Failed to parse {} flow response: {}", endpoint, e))?;
-
-            let csrf_token = flow["ui"]["nodes"]
-                .as_array()
-                .and_then(|nodes| {
-                    nodes
-                        .iter()
-                        .find(|node| node["attributes"]["name"].as_str() == Some("csrf_token"))
-                })
-                .and_then(|node| node["attributes"]["value"].as_str())
-                .ok_or("CSRF token not found in flow response")?
-                .to_string();
-
-            let mut all_cookies = Vec::new();
-            if let Some(existing_cookie) = cookie {
-                all_cookies.push(existing_cookie.to_string());
-            }
-            all_cookies.extend(flow_cookies);
-
-            return Ok(FlowResult {
-                flow,
-                csrf_token,
-                cookies: all_cookies,
-            });
-        }
-
-        if !status.is_success() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(format!(
-                "Failed to fetch {} flow (status {}): {}",
-                endpoint, status, error_text
-            )
-            .into());
-        }
-
-        let flow: serde_json::Value = response
-            .json()
-            .await
-            .map_err(|e| format!("Failed to parse {} flow response: {}", endpoint, e))?;
-
-        let csrf_token = flow["ui"]["nodes"]
-            .as_array()
-            .and_then(|nodes| {
-                nodes
-                    .iter()
-                    .find(|node| node["attributes"]["name"].as_str() == Some("csrf_token"))
-            })
-            .and_then(|node| node["attributes"]["value"].as_str())
-            .ok_or("CSRF token not found in flow response")?
-            .to_string();
-
-        let mut all_cookies = Vec::new();
-        if let Some(existing_cookie) = cookie {
-            all_cookies.push(existing_cookie.to_string());
-        }
-        all_cookies.extend(flow_cookies);
-
-        Ok(FlowResult {
-            flow,
-            csrf_token,
-            cookies: all_cookies,
-        })
-    }
-
-    async fn post_flow(
-        &self,
-        endpoint: &str,
-        flow_id: &str,
-        data: serde_json::Value,
-        cookies: &[String],
-    ) -> Result<PostFlowResult, Box<dyn std::error::Error>> {
-        let cookie_header = cookies.join("; ");
-        let url = format!(
-            "{}/self-service/{}?flow={}",
-            self.public_url, endpoint, flow_id
-        );
-        let url = url.replace("localhost", "127.0.0.1");
-
-        let response = self
-            .client
-            .post(&url)
-            .header(header::CONTENT_TYPE, "application/json")
-            .header(header::COOKIE, cookie_header)
-            .json(&data)
-            .send()
-            .await
-            .map_err(|e| format!("Failed to submit {} flow: {}", endpoint, e))?;
-
-        let response_cookies: Vec<String> = response
-            .headers()
-            .get_all(header::SET_COOKIE)
-            .iter()
-            .filter_map(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-            .collect();
-
-        let status = response.status();
-        if !status.is_success() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(format!("{} failed (status {}): {}", endpoint, status, error_text).into());
-        }
-
-        let data: serde_json::Value = response
-            .json()
-            .await
-            .map_err(|e| format!("Failed to parse {} response: {}", endpoint, e))?;
-
-        Ok(PostFlowResult {
-            data,
-            cookies: response_cookies,
-        })
     }
 
     fn parse_identity(
@@ -321,11 +115,12 @@ impl KratosClient {
     ) -> Result<(KratosSession, Vec<String>), Box<dyn std::error::Error>> {
         if self.check_active_session(cookie).await {
             return Err(Box::from(
-                "Already logged in. Please logout first before logging in again.",
+                "Already logged in. Please logout first before registering.",
             ));
         }
 
-        let flow_result = self.fetch_flow("registration", cookie).await?;
+        let flow_result =
+            fetch_flow(&self.client, &self.public_url, "registration", cookie).await?;
 
         let registration_data = serde_json::json!({
             "method": "password",
@@ -337,22 +132,49 @@ impl KratosClient {
             "csrf_token": flow_result.csrf_token,
         });
 
-        let post_result = self
-            .post_flow(
-                "registration",
-                flow_result.flow["id"].as_str().ok_or("Flow ID not found")?,
-                registration_data,
-                &flow_result.cookies,
-            )
-            .await?;
+        let post_result = post_flow(
+            &self.client,
+            &self.public_url,
+            "registration",
+            flow_result.flow["id"].as_str().ok_or("Flow ID not found")?,
+            registration_data,
+            &flow_result.cookies,
+        )
+        .await?;
 
         let response_data = &post_result.data;
 
-        if response_data.get("identity").is_none() {
-            return Err("Registration failed: identity not found in response".into());
-        }
+        let (identity, session_id) = if let Some(session_data) = response_data.get("session") {
+            let identity = Self::parse_identity(session_data)?;
+            let session_id = session_data["id"]
+                .as_str()
+                .ok_or("Session ID not found")?
+                .to_string();
+            (identity, session_id)
+        } else if response_data.get("identity").is_some() {
+            let identity = Self::parse_identity(response_data)?;
+            if post_result
+                .cookies
+                .iter()
+                .any(|c| c.contains("ory_kratos_session"))
+            {
+                (identity, "session_from_cookie".to_string())
+            } else {
+                return Err("Registration succeeded but no session was created".into());
+            }
+        } else {
+            return Err(
+                "Registration failed: neither session nor identity found in response".into(),
+            );
+        };
 
-        self.handle_login(email, password, cookie).await
+        let session = KratosSession {
+            id: session_id,
+            active: true,
+            identity,
+        };
+
+        Ok((session, post_result.cookies))
     }
 
     pub async fn handle_login(
@@ -367,7 +189,7 @@ impl KratosClient {
             ));
         }
 
-        let flow_result = self.fetch_flow("login", cookie).await?;
+        let flow_result = fetch_flow(&self.client, &self.public_url, "login", cookie).await?;
 
         let login_data = serde_json::json!({
             "method": "password",
@@ -376,36 +198,38 @@ impl KratosClient {
             "csrf_token": flow_result.csrf_token,
         });
 
-        let post_result = self
-            .post_flow(
-                "login",
-                flow_result.flow["id"].as_str().ok_or("Flow ID not found")?,
-                login_data,
-                &flow_result.cookies,
-            )
-            .await?;
+        let post_result = post_flow(
+            &self.client,
+            &self.public_url,
+            "login",
+            flow_result.flow["id"].as_str().ok_or("Flow ID not found")?,
+            login_data,
+            &flow_result.cookies,
+        )
+        .await?;
 
         let response_data = &post_result.data;
 
-        let identity = if response_data.get("session").is_some() {
-            let session_data = &response_data["session"];
-            Self::parse_identity(session_data)?
-        } else if response_data.get("identity").is_some() {
-            Self::parse_identity(response_data)?
-        } else {
-            return Err("Invalid response format: neither 'session' nor 'identity' found".into());
-        };
-
-        let session_id = if let Some(session) = response_data.get("session") {
-            session["id"]
+        let (identity, session_id) = if let Some(session_data) = response_data.get("session") {
+            let identity = Self::parse_identity(session_data)?;
+            let session_id = session_data["id"]
                 .as_str()
                 .ok_or("Session ID not found")?
-                .to_string()
+                .to_string();
+            (identity, session_id)
+        } else if response_data.get("identity").is_some() {
+            let identity = Self::parse_identity(response_data)?;
+            if post_result
+                .cookies
+                .iter()
+                .any(|c| c.contains("ory_kratos_session"))
+            {
+                (identity, "session_from_cookie".to_string())
+            } else {
+                return Err("Login succeeded but no session was created".into());
+            }
         } else {
-            response_data["id"]
-                .as_str()
-                .unwrap_or("temp_session")
-                .to_string()
+            return Err("Invalid response format: neither 'session' nor 'identity' found".into());
         };
 
         let session = KratosSession {

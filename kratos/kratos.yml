@@ -69,12 +69,12 @@ selfservice:
       required_aal: highest_available
 
     recovery:
-      enabled: true
+      enabled: false
       ui_url: http://localhost:8080/recovery
       use: link
 
     verification:
-      enabled: true
+      enabled: false
       ui_url: http://localhost:8080/verification
       use: link
       after:
@@ -98,7 +98,7 @@ log:
   level: debug
   format: text
   leak_sensitive_values: true
-  
+
 secrets:
   cookie:
     - A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6

@@ -1,3 +1,4 @@
+pub mod flows;
 pub mod kratos_client;
 
 #[allow(unused)]

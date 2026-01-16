@@ -35,9 +35,8 @@ impl LoginUseCase {
             }
         }
 
-        // ✅ Если сессии нет — выполняем логин
         let (session, cookies) = match kratos_client
-            .handle_login(identifier, &input.password, None) // ⚠️ Передаём None, чтобы не путать cookies
+            .handle_login(identifier, &input.password, cookie)
             .await
         {
             Ok(result) => result,
