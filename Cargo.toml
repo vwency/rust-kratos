@@ -22,3 +22,4 @@ async-trait = { version = "0.1.89" }
 validator = { version = "0.20.0", features = ["derive"] }
 reqwest = { version = "0.13.1", features = ["json", "cookies"] }
 config = "0.15.19"
+actix-web-prometheus = "0.1.2"
