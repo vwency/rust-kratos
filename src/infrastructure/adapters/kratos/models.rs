@@ -1,6 +1,7 @@
+use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 pub struct KratosIdentity {
     pub id: String,
     pub schema_id: String,
@@ -9,15 +10,14 @@ pub struct KratosIdentity {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 pub struct IdentityTraits {
     pub email: String,
     pub username: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub geo_location: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 pub struct KratosSession {
     pub id: String,
     pub active: bool,
