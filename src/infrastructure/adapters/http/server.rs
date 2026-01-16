@@ -1,15 +1,17 @@
+use crate::application::config::ServerConfig;
+use crate::application::handlers::health_check as handlers;
+use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
+use crate::infrastructure::adapters::graphql::schema::AppSchema;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use std::sync::Arc;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-use crate::application::handlers::health_check as handlers;
-use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
-use crate::infrastructure::adapters::graphql::schema::AppSchema;
+pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> std::io::Result<()> {
+    let bind_address = format!("{}:{}", config.host, config.port);
 
-pub async fn start(schema: Arc<AppSchema>) -> std::io::Result<()> {
-    info!("Booting HTTP server at http://127.0.0.1:8080");
+    info!("Booting HTTP server at http://{}", bind_address);
 
     let server = HttpServer::new(move || {
         App::new()
@@ -28,10 +30,13 @@ pub async fn start(schema: Arc<AppSchema>) -> std::io::Result<()> {
             )
             .configure(handlers::configure)
     })
-    .bind(("127.0.0.1", 8080))?;
+    .bind(&bind_address)?;
 
-    info!("✅ HTTP server successfully started on http://127.0.0.1:8080");
-    info!("🚀 GraphQL Playground: http://127.0.0.1:8080/graphql");
+    info!(
+        "✅ HTTP server successfully started on http://{}",
+        bind_address
+    );
+    info!("🚀 GraphQL Playground: http://{}/graphql", bind_address);
 
     server.run().await
 }

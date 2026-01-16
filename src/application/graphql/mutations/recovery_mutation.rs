@@ -1,23 +1,22 @@
-use crate::application::usecases::auth::register::RegisterUseCase;
-use crate::domain::auth::inputs::RegisterInput;
+use crate::application::usecases::auth::recovery::RecoveryUseCase;
+use crate::domain::auth::inputs::RecoveryInput;
 use crate::infrastructure::adapters::graphql::cookies::ResponseCookies;
 use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]
-pub struct RegisterMutation;
+pub struct RecoveryMutation;
 
 #[Object]
-impl RegisterMutation {
-    async fn register(&self, ctx: &Context<'_>, input: RegisterInput) -> Result<bool> {
+impl RecoveryMutation {
+    async fn recovery(&self, ctx: &Context<'_>, input: RecoveryInput) -> Result<bool> {
         let kratos_client = ctx.data_unchecked::<KratosClient>();
-
         let cookie = ctx
             .data_opt::<Option<String>>()
             .and_then(|opt| opt.as_ref())
             .map(|s| s.as_str());
 
-        let cookies = RegisterUseCase::execute(input, kratos_client, cookie)
+        let cookies = RecoveryUseCase::execute(input, kratos_client, cookie)
             .await
             .map_err(async_graphql::Error::new)?;
 

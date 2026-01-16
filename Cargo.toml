@@ -13,7 +13,7 @@ tracing-actix-web = "0.7.19"
 redis = { version = "0.32.7", features = ["tokio-comp", "connection-manager"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 actix-cors = "0.7"
-dotenv = { version="0.15.0" } 
+dotenv = { version="0.15.0" }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "2.0.17"
@@ -26,4 +26,4 @@ bcrypt  = { version = "0.17.1" }
 uuid = { version = "1.18.1" }
 diesel = { version = "2.3.3" }
 reqwest = { version = "0.12.24", features = ["json", "cookies"] }
-
+config = "0.14"

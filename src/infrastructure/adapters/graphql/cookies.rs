@@ -6,6 +6,7 @@ pub struct ResponseCookies {
     pub cookies: Arc<Mutex<Vec<String>>>,
 }
 
+#[allow(unused)]
 impl ResponseCookies {
     pub fn new() -> Self {
         Self {

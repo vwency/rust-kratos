@@ -3,6 +3,7 @@ use crate::infrastructure::adapters::kratos::models::{IdentityTraits, KratosIden
 use reqwest::header;
 
 impl KratosClient {
+    #[allow(unused)]
     pub(crate) fn parse_identity(
         data: &serde_json::Value,
     ) -> Result<KratosIdentity, Box<dyn std::error::Error>> {

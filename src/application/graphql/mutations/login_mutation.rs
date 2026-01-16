@@ -1,6 +1,6 @@
 use crate::application::usecases::auth::login::LoginUseCase;
 use crate::domain::auth::inputs::LoginInput;
-use crate::infrastructure::adapters::graphql::response_cookies::ResponseCookies;
+use crate::infrastructure::adapters::graphql::cookies::ResponseCookies;
 use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{Context, Object, Result};
 
