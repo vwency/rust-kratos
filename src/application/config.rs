@@ -65,17 +65,12 @@ impl Config {
     pub fn from_env() -> Result<Self, config::ConfigError> {
         let env = env::var("APP_ENV").unwrap_or_else(|_| "development".to_string());
 
-        let config_path = format!("config/{}", env);
+        let config_path = format!("config/app/{}", env);
 
         let builder = config::Config::builder()
             .add_source(
                 config::File::with_name(&config_path)
                     .required(true)
-                    .format(config::FileFormat::Toml),
-            )
-            .add_source(
-                config::File::with_name("config/local")
-                    .required(false)
                     .format(config::FileFormat::Toml),
             )
             .add_source(
