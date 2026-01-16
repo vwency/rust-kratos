@@ -51,16 +51,6 @@ services:
       - kratos-migrate
     restart: unless-stopped
 
-  # Mailslurper - для тестирования email
-  mailslurper:
-    image: docker.io/oryd/mailslurper:latest-smtps
-    container_name: kratos-mailslurper
-    ports:
-      - "4436:4436"
-      - "4437:4437"
-    networks:
-      - kratos-network
-
 networks:
   kratos-network:
     driver: bridge
