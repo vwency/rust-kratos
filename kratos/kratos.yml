@@ -1,4 +1,4 @@
-version: v1.0.0
+version: v1.3.0
 
 dsn: postgres://kratos:kratos_secret@postgres-kratos:5432/kratos?sslmode=disable
 
@@ -50,6 +50,8 @@ selfservice:
   methods:
     password:
       enabled: true
+      config:
+        haveibeenpwned_enabled: false
     totp:
       config:
         issuer: MyApp
@@ -87,12 +89,10 @@ selfservice:
     login:
       ui_url: http://localhost:8080/login
       lifespan: 10m
-      # Убрали секцию after - сессия создается автоматически
 
     registration:
       lifespan: 10m
       ui_url: http://localhost:8080/registration
-      # Убрали секцию after - сессия создается автоматически
 
 log:
   level: debug
@@ -120,7 +120,11 @@ identity:
       url: file:///etc/config/kratos/identity.schema.json
 
 courier:
-  smtp:
-    connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
-    from_address: noreply@example.com
-    from_name: MyApp
+  delivery_strategy: http
+  http:
+    request_config:
+      url: http://localhost:8080/email
+      method: POST
+      body: file:///etc/config/kratos/.mail.api.request.jsonnet
+      headers:
+        Content-Type: application/json
