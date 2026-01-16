@@ -1,12 +1,14 @@
-use crate::application::graphql::mutations::login_mutation::LoginMutation;
 use crate::application::graphql::mutations::register_mutation::RegisterMutation;
 use crate::application::graphql::queries::get_current_user::CurrentUserQuery;
 use crate::application::graphql::queries::health_query::HealthQuery;
+use crate::application::graphql::{
+    mutations::login_mutation::LoginMutation, queries::logout_query::LogoutQuery,
+};
 use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{EmptySubscription, MergedObject, Schema};
 
 #[derive(MergedObject, Default)]
-pub struct QueryRoot(HealthQuery, CurrentUserQuery);
+pub struct QueryRoot(HealthQuery, CurrentUserQuery, LogoutQuery);
 
 #[derive(MergedObject, Default)]
 pub struct MutationRoot(RegisterMutation, LoginMutation);
