@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-/// Структура для передачи cookies между GraphQL и HTTP handler
 #[derive(Clone, Default)]
 pub struct ResponseCookies {
     pub cookies: Arc<Mutex<Vec<String>>>,

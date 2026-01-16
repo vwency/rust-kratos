@@ -2,7 +2,7 @@ use crate::application::usecases::auth::register::RegisterUseCase;
 use crate::domain::auth::inputs::RegisterInput;
 use crate::domain::auth::responses::AuthResponse;
 use crate::infrastructure::adapters::graphql::response_cookies::ResponseCookies;
-use crate::infrastructure::adapters::kratos::kratos_client::KratosClient;
+use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]

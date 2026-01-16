@@ -1,7 +1,7 @@
 use crate::application::graphql::mutations::login_mutation::LoginMutation;
 use crate::application::graphql::mutations::register_mutation::RegisterMutation;
 use crate::application::graphql::queries::health_query::HealthQuery;
-use crate::infrastructure::adapters::kratos::kratos_client::KratosClient;
+use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{EmptySubscription, MergedObject, Schema};
 
 #[derive(MergedObject, Default)]
@@ -14,8 +14,8 @@ pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 pub fn create_schema(jwt_secret: String) -> AppSchema {
     let kratos_client = KratosClient::new(
-        "http://localhost:4434".to_string(), // admin URL
-        "http://localhost:4433".to_string(), // public URL
+        "http://localhost:4434".to_string(),
+        "http://localhost:4433".to_string(),
     );
 
     Schema::build(
@@ -24,6 +24,6 @@ pub fn create_schema(jwt_secret: String) -> AppSchema {
         EmptySubscription,
     )
     .data(jwt_secret)
-    .data(kratos_client) // Add KratosClient to schema data
+    .data(kratos_client)
     .finish()
 }

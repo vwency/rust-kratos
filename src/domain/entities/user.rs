@@ -1,4 +1,4 @@
-use crate::infrastructure::adapters::kratos::kratos_client::KratosIdentity;
+use crate::infrastructure::adapters::kratos::models::KratosIdentity;
 use async_graphql::SimpleObject;
 
 #[allow(unused)]

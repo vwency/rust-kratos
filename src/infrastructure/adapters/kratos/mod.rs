@@ -1,5 +1,7 @@
+pub mod client;
 pub mod flows;
-pub mod kratos_client;
+pub mod handlers;
+pub mod models;
 
-#[allow(unused)]
-pub use kratos_client::KratosClient;
+pub use client::KratosClient;
+pub use models::{IdentityTraits, KratosIdentity, KratosSession};
