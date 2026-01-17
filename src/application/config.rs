@@ -63,9 +63,9 @@ fn default_accept_invalid_certs() -> bool {
 
 impl Config {
     pub fn from_env() -> Result<Self, config::ConfigError> {
-        let env = env::var("APP_ENV").unwrap_or_else(|_| "development".to_string());
+        let env_var = env::var("APP_ENV").unwrap_or_else(|_| String::from("development"));
 
-        let config_path = format!("config/app/{}", env);
+        let config_path = format!("config/app/{}", env_var);
 
         let builder = config::Config::builder()
             .add_source(

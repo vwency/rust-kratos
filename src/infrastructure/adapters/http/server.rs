@@ -5,19 +5,21 @@ use crate::infrastructure::adapters::graphql::schema::AppSchema;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
+use anyhow::Context;
 use std::sync::Arc;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> std::io::Result<()> {
+pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
     info!("Booting HTTP server at http://{}", bind_address);
 
     let prometheus = PrometheusMetricsBuilder::new("api")
         .endpoint("/metrics")
         .build()
-        .unwrap();
+        .map_err(|e| anyhow::anyhow!("Failed to build Prometheus metrics: {}", e))?;
 
+    let bind_address_clone = bind_address.clone();
     let server = HttpServer::new(move || {
         App::new()
             .wrap(prometheus.clone())
@@ -36,7 +38,8 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> std::io::Res
             )
             .configure(handlers::configure)
     })
-    .bind(&bind_address)?;
+        .bind(&bind_address_clone)
+        .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
 
     info!(
         "✅ HTTP server successfully started on http://{}",
@@ -45,5 +48,5 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> std::io::Res
     info!("🚀 GraphQL Playground: http://{}/graphql", bind_address);
     info!("📊 Prometheus Metrics: http://{}/metrics", bind_address);
 
-    server.run().await
+    server.run().await.map_err(|e| anyhow::anyhow!("Server runtime error: {}", e))
 }

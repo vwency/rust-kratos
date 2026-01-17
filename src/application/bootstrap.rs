@@ -6,19 +6,12 @@ use tokio::signal;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-pub async fn run() -> std::io::Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("info"))
-        .init();
+pub async fn run() -> anyhow::Result<()> {
+    init_tracing()?;
 
     info!("Starting application...");
     info!("Loading configuration...");
-    let config = Config::from_env().map_err(|e| {
-        std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Failed to load config: {}", e),
-        )
-    })?;
+    let config = Config::from_env()?;
 
     info!("Creating GraphQL schema...");
     let schema = Arc::new(create_schema(&config));
@@ -31,11 +24,21 @@ pub async fn run() -> std::io::Result<()> {
 
     match server_handle.await {
         Ok(result) => result,
-        Err(e) => Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Server task panicked: {}", e),
-        )),
+        Err(e) => Err(anyhow::anyhow!("Server task panicked: {}", e)),
     }
+}
+
+fn init_tracing() -> anyhow::Result<()> {
+    if let Err(e) = tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::new("info"))
+        .try_init()
+    {
+        return Err(anyhow::anyhow!(
+            "Failed to initialize tracing subscriber: {}",
+            e
+        ));
+    }
+    Ok(())
 }
 
 async fn shutdown_signal() {
