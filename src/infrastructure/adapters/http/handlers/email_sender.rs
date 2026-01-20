@@ -1,7 +1,7 @@
-use crate::application::usecases::health_check::HealthCheck;
-use actix_web::{HttpResponse, Responder, get, post};
+use actix_web::{HttpResponse, Responder, post};
 use serde::Deserialize;
 use tracing::instrument;
+
 #[derive(Deserialize, Debug)]
 struct EmailRequest {
     #[allow(dead_code)]
@@ -16,24 +16,14 @@ struct EmailRequest {
 #[instrument]
 async fn email(_payload: actix_web::web::Json<EmailRequest>) -> impl Responder {
     tracing::info!("Email endpoint called (stub)");
-
     HttpResponse::Ok().json(serde_json::json!({
         "status": "ok",
         "message": "Email stub - always returns 200"
     }))
 }
 
-#[get("/health")]
-#[instrument]
-async fn health() -> impl Responder {
-    let use_case = HealthCheck;
-    let result = use_case.execute();
-    HttpResponse::Ok().body(result)
-}
-
 use actix_web::web;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(health);
     cfg.service(email);
 }

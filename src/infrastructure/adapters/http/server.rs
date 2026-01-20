@@ -38,8 +38,8 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
             )
             .configure(handlers::configure)
     })
-        .bind(&bind_address_clone)
-        .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
+    .bind(&bind_address_clone)
+    .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
 
     info!(
         "✅ HTTP server successfully started on http://{}",
@@ -48,5 +48,8 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
     info!("🚀 GraphQL Playground: http://{}/graphql", bind_address);
     info!("📊 Prometheus Metrics: http://{}/metrics", bind_address);
 
-    server.run().await.map_err(|e| anyhow::anyhow!("Server runtime error: {}", e))
+    server
+        .run()
+        .await
+        .map_err(|e| anyhow::anyhow!("Server runtime error: {}", e))
 }

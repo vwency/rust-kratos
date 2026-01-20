@@ -1,8 +1,8 @@
 use crate::application::config::Config;
-use crate::application::graphql::mutations::recovery_mutation::RecoveryMutation;
-use crate::application::graphql::mutations::register_mutation::RegisterMutation;
-use crate::application::graphql::queries::get_current_user::CurrentUserQuery;
-use crate::application::graphql::{
+use crate::infrastructure::adapters::graphql::mutations::recovery_mutation::RecoveryMutation;
+use crate::infrastructure::adapters::graphql::mutations::register_mutation::RegisterMutation;
+use crate::infrastructure::adapters::graphql::queries::current_user_query::CurrentUserQuery;
+use crate::infrastructure::adapters::graphql::{
     mutations::login_mutation::LoginMutation, queries::logout_query::LogoutQuery,
 };
 use crate::infrastructure::adapters::kratos::KratosClient;
