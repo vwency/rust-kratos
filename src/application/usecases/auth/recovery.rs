@@ -16,7 +16,7 @@ impl RecoveryUseCase {
             "Starting recovery process"
         );
 
-        let cookies = match kratos_client.handle_recovery(&input.email, cookie).await {
+        let cookies = match kratos_client.recovery(&input.email, cookie).await {
             Ok(result) => result,
             Err(e) => {
                 let error_msg = e.to_string();

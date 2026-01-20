@@ -32,7 +32,7 @@ impl LoginUseCase {
         }
 
         let cookies = match kratos_client
-            .handle_login(identifier, &input.password, cookie)
+            .login(identifier, &input.password, cookie)
             .await
         {
             Ok(result) => result,

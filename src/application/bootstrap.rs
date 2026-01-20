@@ -1,6 +1,6 @@
 use crate::application::config::Config;
-use crate::infrastructure::adapters::graphql::schema::create_schema;
 use crate::infrastructure::adapters::http::server;
+use crate::presentation::graphql::schema::create_schema;
 use std::sync::Arc;
 use tokio::signal;
 use tracing::info;

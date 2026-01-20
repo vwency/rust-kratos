@@ -2,10 +2,7 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use reqwest::header;
 
 impl KratosClient {
-    pub async fn handle_logout(
-        &self,
-        cookie: &str,
-    ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    pub async fn logout(&self, cookie: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let url = format!("{}/self-service/logout/browser", self.public_url);
         let url = url.replace("localhost", "127.0.0.1");
 
