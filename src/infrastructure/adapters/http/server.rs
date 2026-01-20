@@ -1,7 +1,7 @@
 use crate::application::config::ServerConfig;
-use crate::application::handlers::health_check as handlers;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
 use crate::infrastructure::adapters::graphql::schema::AppSchema;
+use crate::infrastructure::adapters::http::handlers::{email_sender, health_check};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
@@ -20,6 +20,7 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
         .map_err(|e| anyhow::anyhow!("Failed to build Prometheus metrics: {}", e))?;
 
     let bind_address_clone = bind_address.clone();
+
     let server = HttpServer::new(move || {
         App::new()
             .wrap(prometheus.clone())
@@ -36,7 +37,8 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
                     .route(web::post().to(graphql_handler))
                     .route(web::get().to(graphql_playground)),
             )
-            .configure(handlers::configure)
+            .configure(health_check::configure)
+            .configure(email_sender::configure)
     })
     .bind(&bind_address_clone)
     .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
