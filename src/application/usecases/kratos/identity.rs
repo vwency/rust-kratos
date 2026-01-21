@@ -1,5 +1,5 @@
+use crate::domain::kratos::models::{IdentityTraits, KratosIdentity};
 use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::models::{IdentityTraits, KratosIdentity};
 use reqwest::header;
 
 impl KratosClient {

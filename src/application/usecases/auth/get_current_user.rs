@@ -1,4 +1,5 @@
-use crate::infrastructure::adapters::kratos::{KratosClient, models::IdentityTraits};
+use crate::domain::kratos::models::IdentityTraits;
+use crate::infrastructure::adapters::kratos::KratosClient;
 
 pub struct GetCurrentUserUseCase;
 

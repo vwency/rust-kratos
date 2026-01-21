@@ -1,5 +1,6 @@
 use crate::application::usecases::auth::get_current_user::GetCurrentUserUseCase;
-use crate::infrastructure::adapters::kratos::{KratosClient, models::IdentityTraits};
+use crate::domain::kratos::models::IdentityTraits;
+use crate::infrastructure::adapters::kratos::KratosClient;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]
