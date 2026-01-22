@@ -9,8 +9,8 @@ impl KratosClient {
         cookie: Option<&str>,
     ) -> Result<FlowResult, Box<dyn std::error::Error>> {
         if self.check_active_session(cookie).await {
-            error!("Login attempt with active session");
-            return Err("Already logged in. Please logout first before logging in again.".into());
+            error!("Login attempt with an already active session");
+            return Err("Already logged in. Please log out first.".into());
         }
 
         fetch_flow(&self.client, &self.public_url, "login", cookie).await
@@ -27,7 +27,7 @@ impl KratosClient {
         resend: Option<&str>,
         flow_cookies: Vec<String>,
     ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        let mut login_data = serde_json::json!({
+        let mut payload = serde_json::json!({
             "method": "password",
             "identifier": identifier,
             "password": password,
@@ -35,28 +35,28 @@ impl KratosClient {
         });
 
         if let Some(addr) = address {
-            login_data["address"] = serde_json::json!(addr);
+            payload["address"] = serde_json::json!(addr);
         }
 
         if let Some(c) = code {
-            login_data["code"] = serde_json::json!(c);
-            login_data["method"] = serde_json::json!("code");
+            payload["code"] = serde_json::json!(c);
+            payload["method"] = serde_json::json!("code");
         }
 
         if let Some(r) = resend {
-            login_data["resend"] = serde_json::json!(r);
+            payload["resend"] = serde_json::json!(r);
         }
 
-        let post_result = post_flow(
+        let result = post_flow(
             &self.client,
             &self.public_url,
             "login",
             flow_id,
-            login_data,
+            payload,
             &flow_cookies,
         )
         .await?;
 
-        Ok(post_result.cookies)
+        Ok(result.cookies)
     }
 }
