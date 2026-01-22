@@ -10,7 +10,7 @@ impl RegisterUseCase {
         cookie: Option<&str>,
     ) -> Result<Vec<String>, String> {
         let cookies = kratos_client
-            .register(&input.email, &input.username, &input.password, cookie)
+            .update_register_flow(&input.email, &input.username, &input.password, cookie)
             .await
             .map_err(|e| format!("Failed to register: {}", e))?;
 

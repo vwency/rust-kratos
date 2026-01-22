@@ -2,7 +2,7 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
 
 impl KratosClient {
-    pub async fn register(
+    pub async fn update_register_flow(
         &self,
         email: &str,
         username: &str,
