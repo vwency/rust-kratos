@@ -1,7 +1,7 @@
 use crate::application::config::ServerConfig;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
 use crate::presentation::graphql::schema::AppSchema;
-use crate::presentation::rest::{email_sender, health_check};
+use crate::presentation::rest::{email_sender, health_check, verification};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
@@ -39,6 +39,7 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
             )
             .configure(health_check::configure)
             .configure(email_sender::configure)
+            .configure(verification::configure)
     })
     .bind(&bind_address_clone)
     .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
