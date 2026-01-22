@@ -10,11 +10,7 @@ impl LoginUseCase {
         kratos_client: &KratosClient,
         cookie: Option<&str>,
     ) -> Result<Vec<String>, String> {
-        let identifier = input
-            .email
-            .as_ref()
-            .or(input.username.as_ref())
-            .ok_or("Email or username required")?;
+        let identifier = &input.identifier;
 
         info!(
             identifier = identifier,
@@ -31,15 +27,25 @@ impl LoginUseCase {
             }
         }
 
+        let flow = match kratos_client.get_login_flow(cookie).await {
+            Ok(flow) => flow,
+            Err(e) => {
+                let error_msg = e.to_string();
+                error!(error = %error_msg, "Failed to get login flow");
+                return Err(format!("Failed to get login flow: {}", error_msg));
+            }
+        };
+
         let cookies = match kratos_client
-            .login(
-                identifier,
+            .submit_login_flow(
+                &flow.flow_id,
+                &flow.csrf_token,
+                &input.identifier,
                 &input.password,
                 input.address.as_deref(),
                 input.code.as_deref(),
-                input.identifier.as_deref(),
                 input.resend.as_deref(),
-                cookie,
+                &flow.cookies,
             )
             .await
         {
