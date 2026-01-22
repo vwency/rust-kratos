@@ -1,12 +1,18 @@
 use crate::domain::kratos::flows::FlowResult;
 use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
+use tracing::error;
 
 impl KratosClient {
     pub async fn get_login_flow(
         &self,
         cookie: Option<&str>,
     ) -> Result<FlowResult, Box<dyn std::error::Error>> {
+        if self.check_active_session(cookie).await {
+            error!("Login attempt with active session");
+            return Err("Already logged in. Please logout first before logging in again.".into());
+        }
+
         fetch_flow(&self.client, &self.public_url, "login", cookie).await
     }
 
@@ -19,7 +25,7 @@ impl KratosClient {
         address: Option<&str>,
         code: Option<&str>,
         resend: Option<&str>,
-        flow_cookies: &[String],
+        flow_cookies: Vec<String>,
     ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let mut login_data = serde_json::json!({
             "method": "password",
@@ -47,7 +53,7 @@ impl KratosClient {
             "login",
             flow_id,
             login_data,
-            flow_cookies,
+            &flow_cookies,
         )
         .await?;
 
