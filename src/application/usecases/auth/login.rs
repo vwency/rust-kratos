@@ -11,7 +11,6 @@ impl LoginUseCase {
         cookie: Option<&str>,
     ) -> Result<Vec<String>, String> {
         let identifier = &input.identifier;
-
         info!(
             identifier = identifier,
             cookie_present = cookie.is_some(),
@@ -36,9 +35,14 @@ impl LoginUseCase {
             }
         };
 
+        let flow_id = flow.flow["id"]
+            .as_str()
+            .ok_or("Flow ID not found")?
+            .to_string();
+
         let cookies = match kratos_client
             .submit_login_flow(
-                &flow.flow_id,
+                &flow_id,
                 &flow.csrf_token,
                 &input.identifier,
                 &input.password,

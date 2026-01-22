@@ -1,27 +1,13 @@
+use crate::domain::kratos::flows::FlowResult;
 use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
-
-pub struct LoginFlowResult {
-    pub flow_id: String,
-    pub csrf_token: String,
-    pub cookies: Vec<String>,
-}
 
 impl KratosClient {
     pub async fn get_login_flow(
         &self,
         cookie: Option<&str>,
-    ) -> Result<LoginFlowResult, Box<dyn std::error::Error>> {
-        let flow_result = fetch_flow(&self.client, &self.public_url, "login", cookie).await?;
-        let flow_id = flow_result.flow["id"]
-            .as_str()
-            .ok_or("Flow ID not found")?
-            .to_string();
-        Ok(LoginFlowResult {
-            flow_id,
-            csrf_token: flow_result.csrf_token,
-            cookies: flow_result.cookies,
-        })
+    ) -> Result<FlowResult, Box<dyn std::error::Error>> {
+        fetch_flow(&self.client, &self.public_url, "login", cookie).await
     }
 
     pub async fn submit_login_flow(
