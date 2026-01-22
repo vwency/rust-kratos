@@ -32,7 +32,15 @@ impl LoginUseCase {
         }
 
         let cookies = match kratos_client
-            .login(identifier, &input.password, cookie)
+            .login(
+                identifier,
+                &input.password,
+                input.address.as_deref(),
+                input.code.as_deref(),
+                input.identifier.as_deref(),
+                input.resend.as_deref(),
+                cookie,
+            )
             .await
         {
             Ok(result) => result,
@@ -54,7 +62,6 @@ impl LoginUseCase {
         }
 
         info!("Login successful for identifier={}", identifier);
-
         Ok(cookies)
     }
 }
