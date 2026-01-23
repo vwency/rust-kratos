@@ -17,7 +17,7 @@ rule_files:
 scrape_configs:
   - job_name: "rust-api"
     static_configs:
-      - targets: ["rust-api:8080"]
+      - targets: ["rust_gateway:8080"]
     metrics_path: "/metrics"
     scrape_interval: 5s
 
