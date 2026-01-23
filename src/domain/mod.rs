@@ -1,2 +1,3 @@
-pub mod auth;
-pub mod kratos;
+pub mod entities;
+pub mod graphql;
+pub mod ports;

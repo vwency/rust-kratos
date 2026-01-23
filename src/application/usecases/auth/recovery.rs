@@ -1,44 +1,36 @@
-use crate::domain::auth::inputs::RecoveryInput;
-use crate::infrastructure::adapters::kratos::KratosClient;
-use tracing::{debug, error, info};
+use crate::domain::graphql::inputs::RecoveryInput;
+use crate::domain::ports::{RecoveryError, RecoveryPort};
+use tracing::{error, info};
 
-pub struct RecoveryUseCase;
+pub struct RecoveryUseCase {
+    recovery_port: Box<dyn RecoveryPort>,
+}
 
 impl RecoveryUseCase {
+    pub fn new(recovery_port: Box<dyn RecoveryPort>) -> Self {
+        Self { recovery_port }
+    }
+
     pub async fn execute(
+        &self,
         input: RecoveryInput,
-        kratos_client: &KratosClient,
         cookie: Option<&str>,
-    ) -> Result<Vec<String>, String> {
+    ) -> Result<(), RecoveryError> {
         info!(
             email = &input.email,
             cookie_present = cookie.is_some(),
             "Starting recovery process"
         );
 
-        let cookies = match kratos_client.recovery(&input.email, cookie).await {
-            Ok(result) => result,
-            Err(e) => {
-                let error_msg = e.to_string();
-                error!(error = %error_msg, "Recovery failed");
-                return Err(format!("Recovery failed: {}", error_msg));
-            }
-        };
+        self.recovery_port
+            .initiate_recovery(input.into(), cookie)
+            .await
+            .map_err(|e| {
+                error!(error = %e, "Recovery failed");
+                e
+            })?;
 
-        if cookies.is_empty() {
-            debug!("No cookies returned from Kratos");
-        } else {
-            debug!(
-                cookies_count = cookies.len(),
-                cookies = ?cookies,
-                "Cookies returned from Kratos"
-            );
-        }
-
-        info!(
-            "Recovery email sent successfully for email={}",
-            &input.email
-        );
-        Ok(cookies)
+        info!("Recovery email sent successfully");
+        Ok(())
     }
 }

@@ -1,31 +1,27 @@
-use crate::domain::auth::inputs::RegisterInput;
-use crate::infrastructure::adapters::kratos::KratosClient;
+use crate::domain::graphql::inputs::RegisterInput;
+use crate::domain::ports::{RegistrationError, RegistrationPort};
 
-pub struct RegisterUseCase;
+pub struct RegisterUseCase {
+    registration_port: Box<dyn RegistrationPort>,
+}
 
 impl RegisterUseCase {
+    pub fn new(registration_port: Box<dyn RegistrationPort>) -> Self {
+        Self { registration_port }
+    }
+
     pub async fn execute(
+        &self,
         input: RegisterInput,
-        kratos_client: &KratosClient,
         cookie: Option<&str>,
-    ) -> Result<Vec<String>, String> {
-        let (flow_id, csrf_token, flow_cookies) = kratos_client
-            .get_registration_flow(cookie)
-            .await
-            .map_err(|e| format!("Failed to get registration flow: {}", e))?;
+    ) -> Result<String, RegistrationError> {
+        let flow_id = self.registration_port.initiate_registration(cookie).await?;
 
-        let cookies = kratos_client
-            .update_registration_flow(
-                &flow_id,
-                &csrf_token,
-                &input.email,
-                &input.username,
-                &input.password,
-                flow_cookies,
-            )
-            .await
-            .map_err(|e| format!("Failed to complete registration: {}", e))?;
+        let session_token = self
+            .registration_port
+            .complete_registration(&flow_id, input.into())
+            .await?;
 
-        Ok(cookies)
+        Ok(session_token)
     }
 }

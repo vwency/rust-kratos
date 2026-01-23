@@ -1,38 +1,28 @@
-use crate::domain::auth::inputs::LoginInput;
-use crate::infrastructure::adapters::kratos::KratosClient;
+use crate::domain::graphql::inputs::LoginInput;
+use crate::domain::ports::auth::AuthenticationPort;
 
-pub struct LoginUseCase;
+pub struct LoginUseCase {
+    auth_port: Box<dyn AuthenticationPort>,
+}
 
 impl LoginUseCase {
-    pub async fn execute(
-        input: LoginInput,
-        kratos_client: &KratosClient,
-        cookie: Option<&str>,
-    ) -> Result<Vec<String>, String> {
-        let flow = kratos_client
-            .get_login_flow(cookie)
+    pub fn new(auth_port: Box<dyn AuthenticationPort>) -> Self {
+        Self { auth_port }
+    }
+
+    pub async fn execute(&self, input: LoginInput, cookie: Option<&str>) -> Result<String, String> {
+        let flow_id = self
+            .auth_port
+            .initiate_login(cookie)
             .await
-            .map_err(|e| format!("Failed to get login flow: {}", e))?;
+            .map_err(|e| e.to_string())?;
 
-        let flow_id = flow.flow["id"]
-            .as_str()
-            .ok_or("Flow ID not found")?
-            .to_string();
-
-        let cookies = kratos_client
-            .submit_login_flow(
-                &flow_id,
-                &flow.csrf_token,
-                &input.identifier,
-                &input.password,
-                input.address.as_deref(),
-                input.code.as_deref(),
-                input.resend.as_deref(),
-                flow.cookies,
-            )
+        let session_token = self
+            .auth_port
+            .complete_login(&flow_id, input.into())
             .await
-            .map_err(|e| format!("Login failed: {}", e))?;
+            .map_err(|e| e.to_string())?;
 
-        Ok(cookies)
+        Ok(session_token)
     }
 }
