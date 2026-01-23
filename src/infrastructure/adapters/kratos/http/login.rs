@@ -4,7 +4,7 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use crate::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
 use async_trait::async_trait;
-use tracing::error;
+use tracing::{debug, error};
 
 #[allow(unused)]
 pub struct KratosAuthenticationAdapter {
@@ -55,11 +55,15 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
             .await
             .map_err(|e| AuthError::NetworkError(e.to_string()))?;
 
+        let csrf_token = flow.csrf_token.clone();
+
+        debug!("Using flow_id: {}, csrf_token: {}", flow_id, csrf_token);
+
         let mut payload = serde_json::json!({
             "method": "password",
             "identifier": credentials.identifier,
             "password": credentials.password,
-            "csrf_token": flow.csrf_token,
+            "csrf_token": csrf_token,
         });
 
         if let Some(addr) = credentials.address {
@@ -75,6 +79,11 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
             payload["resend"] = serde_json::json!(resend);
         }
 
+        debug!(
+            "Login payload: {}",
+            serde_json::to_string_pretty(&payload).unwrap()
+        );
+
         let result = post_flow(
             &self.client.client,
             &self.client.public_url,
@@ -84,12 +93,32 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
             &flow.cookies,
         )
         .await
-        .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+        .map_err(|e| {
+            error!("Failed to post login flow: {}", e);
+            AuthError::NetworkError(e.to_string())
+        })?;
+
+        debug!("Received cookies: {:?}", result.cookies);
+        debug!("Response data: {:?}", result.data);
+
+        if let Some(session) = result.data.get("session") {
+            debug!("Session data present: {:?}", session);
+        }
+
+        if result.cookies.is_empty() {
+            error!("No cookies in response");
+            return Err(AuthError::UnknownError(
+                "No cookies received from server".to_string(),
+            ));
+        }
 
         result
             .cookies
             .into_iter()
-            .find(|c| c.starts_with("ory_session_"))
-            .ok_or_else(|| AuthError::UnknownError("Session token not found".to_string()))
+            .find(|c| c.contains("session") || c.starts_with("ory_"))
+            .ok_or_else(|| {
+                error!("Session cookie not found in response cookies");
+                AuthError::UnknownError("Session token not found".to_string())
+            })
     }
 }
