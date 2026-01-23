@@ -5,6 +5,7 @@ pub struct LoginUseCase {
     auth_port: Box<dyn AuthenticationPort>,
 }
 
+#[allow(unused)]
 impl LoginUseCase {
     pub fn new(auth_port: Box<dyn AuthenticationPort>) -> Self {
         Self { auth_port }

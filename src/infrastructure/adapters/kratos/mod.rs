@@ -1,6 +1,5 @@
 pub mod client;
-pub mod flows;
 pub mod models;
 
-pub mod handlers;
+pub mod http;
 pub use client::KratosClient;

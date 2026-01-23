@@ -1,10 +1,10 @@
 use crate::application::config::Config;
 use crate::infrastructure::adapters::kratos::KratosClient;
-use crate::presentation::graphql::mutations::recovery_mutation::RecoveryMutation;
-use crate::presentation::graphql::mutations::register_mutation::RegisterMutation;
-use crate::presentation::graphql::mutations::verify_mutation::VerificationMutation;
-use crate::presentation::graphql::queries::current_user_query::CurrentUserQuery;
-use crate::presentation::graphql::{
+use crate::presentation::api::graphql::mutations::recovery_mutation::RecoveryMutation;
+use crate::presentation::api::graphql::mutations::register_mutation::RegisterMutation;
+use crate::presentation::api::graphql::mutations::verify_mutation::VerificationMutation;
+use crate::presentation::api::graphql::queries::current_user_query::CurrentUserQuery;
+use crate::presentation::api::graphql::{
     mutations::login_mutation::LoginMutation, queries::logout_query::LogoutQuery,
 };
 use async_graphql::{EmptySubscription, MergedObject, Schema};

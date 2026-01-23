@@ -6,6 +6,7 @@ pub struct RecoveryUseCase {
     recovery_port: Box<dyn RecoveryPort>,
 }
 
+#[allow(unused)]
 impl RecoveryUseCase {
     pub fn new(recovery_port: Box<dyn RecoveryPort>) -> Self {
         Self { recovery_port }

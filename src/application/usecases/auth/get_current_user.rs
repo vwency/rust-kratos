@@ -5,6 +5,7 @@ pub struct GetCurrentUserUseCase {
     identity_port: Box<dyn IdentityPort>,
 }
 
+#[allow(unused)]
 impl GetCurrentUserUseCase {
     pub fn new(identity_port: Box<dyn IdentityPort>) -> Self {
         Self { identity_port }

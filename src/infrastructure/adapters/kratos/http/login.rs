@@ -1,8 +1,8 @@
 use crate::domain::ports::auth::{AuthError, AuthenticationPort, LoginCredentials};
 use crate::domain::ports::session::SessionPort;
 use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
-use crate::infrastructure::adapters::kratos::handlers::logout::KratosSessionAdapter;
+use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
+use crate::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
 use async_trait::async_trait;
 use tracing::error;
 
