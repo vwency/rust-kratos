@@ -1,15 +1,17 @@
-use crate::infrastructure::adapters::kratos::KratosClient;
+use crate::domain::ports::{SessionError, SessionPort};
 
-pub struct LogoutUseCase;
+pub struct LogoutUseCase {
+    session_port: Box<dyn SessionPort>,
+}
 
 impl LogoutUseCase {
-    pub async fn execute(
-        kratos_client: &KratosClient,
-        cookie: Option<&str>,
-    ) -> Result<Vec<String>, String> {
-        kratos_client
-            .logout(cookie.unwrap_or(""))
-            .await
-            .map_err(|e| format!("Logout failed: {}", e))
+    pub fn new(session_port: Box<dyn SessionPort>) -> Self {
+        Self { session_port }
+    }
+
+    pub async fn execute(&self, cookie: Option<&str>) -> Result<(), SessionError> {
+        let cookie = cookie.ok_or(SessionError::NotAuthenticated)?;
+
+        self.session_port.logout(cookie).await
     }
 }

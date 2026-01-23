@@ -1,57 +1,44 @@
-use crate::infrastructure::adapters::kratos::client::KratosClient;
-use serde_json::Value;
+use crate::domain::graphql::inputs::{
+    SendVerificationCodeInput, SubmitVerificationCodeInput, VerifyByLinkInput,
+};
+use crate::domain::ports::{VerificationError, VerificationPort};
 
-pub struct VerificationUseCase;
+pub struct VerificationUseCase {
+    verification_port: Box<dyn VerificationPort>,
+}
 
 impl VerificationUseCase {
-    pub async fn execute_link(
-        email: &str,
-        kratos_client: &KratosClient,
-        cookie: Option<&str>,
-        transient_payload: Option<Value>,
-    ) -> Result<Vec<String>, String> {
-        let flow_result = kratos_client
-            .get_verification_flow(cookie)
-            .await
-            .map_err(|e| format!("Failed to get verification flow: {}", e))?;
+    pub fn new(verification_port: Box<dyn VerificationPort>) -> Self {
+        Self { verification_port }
+    }
 
-        kratos_client
-            .verification_link(email, &flow_result, transient_payload)
+    pub async fn execute_link(
+        &self,
+        input: VerifyByLinkInput,
+        cookie: Option<&str>,
+    ) -> Result<(), VerificationError> {
+        self.verification_port
+            .verify_by_link(input.into(), cookie)
             .await
-            .map_err(|e| format!("Verification link failed: {}", e))
     }
 
     pub async fn execute_code_send(
-        email: &str,
-        kratos_client: &KratosClient,
+        &self,
+        input: SendVerificationCodeInput,
         cookie: Option<&str>,
-        transient_payload: Option<Value>,
-    ) -> Result<Vec<String>, String> {
-        let flow_result = kratos_client
-            .get_verification_flow(cookie)
+    ) -> Result<(), VerificationError> {
+        self.verification_port
+            .send_verification_code(input.into(), cookie)
             .await
-            .map_err(|e| format!("Failed to get verification flow: {}", e))?;
-
-        kratos_client
-            .verification_code_send(email, &flow_result, transient_payload)
-            .await
-            .map_err(|e| format!("Failed to send verification code: {}", e))
     }
 
     pub async fn execute_code_submit(
-        code: &str,
-        kratos_client: &KratosClient,
+        &self,
+        input: SubmitVerificationCodeInput,
         cookie: &str,
-        transient_payload: Option<Value>,
-    ) -> Result<Vec<String>, String> {
-        let flow_result = kratos_client
-            .get_verification_flow(Some(cookie))
+    ) -> Result<(), VerificationError> {
+        self.verification_port
+            .submit_verification_code(input.into(), cookie)
             .await
-            .map_err(|e| format!("Failed to get verification flow: {}", e))?;
-
-        kratos_client
-            .verification_code_submit(code, &flow_result, transient_payload)
-            .await
-            .map_err(|e| format!("Failed to submit verification code: {}", e))
     }
 }

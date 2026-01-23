@@ -1,4 +1,4 @@
-use crate::domain::kratos::flows::{FlowResult, PostFlowResult};
+use crate::infrastructure::adapters::kratos::models::flows::{FlowResult, PostFlowResult};
 use reqwest::{Client, StatusCode, header};
 use serde_json;
 use std::error::Error;

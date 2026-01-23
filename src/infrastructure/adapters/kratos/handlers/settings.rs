@@ -1,18 +1,7 @@
-use crate::domain::kratos::flows::FlowResult;
 use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
+use crate::infrastructure::adapters::kratos::flows::post_flow;
 
 impl KratosClient {
-    pub async fn get_settings_flow(
-        &self,
-        cookie: Option<&str>,
-    ) -> Result<FlowResult, Box<dyn std::error::Error>> {
-        if !self.check_active_session(cookie).await {
-            return Err("No active session found. Please log in first.".into());
-        }
-        fetch_flow(&self.client, &self.public_url, "settings", cookie).await
-    }
-
     pub async fn submit_settings_flow(
         &self,
         flow_id: &str,

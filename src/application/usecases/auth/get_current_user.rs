@@ -1,18 +1,20 @@
-use crate::domain::kratos::models::IdentityTraits;
-use crate::infrastructure::adapters::kratos::KratosClient;
+use crate::domain::entities::user::UserProfile;
+use crate::domain::ports::{IdentityError, IdentityPort};
 
-pub struct GetCurrentUserUseCase;
+pub struct GetCurrentUserUseCase {
+    identity_port: Box<dyn IdentityPort>,
+}
 
 impl GetCurrentUserUseCase {
-    pub async fn execute(
-        kratos_client: &KratosClient,
-        cookie: Option<&str>,
-    ) -> Result<IdentityTraits, String> {
-        let traits: IdentityTraits = kratos_client
-            .handle_get_current_user(cookie.unwrap_or(""))
-            .await
-            .map_err(|e| format!("Failed to get current user: {}", e))?;
+    pub fn new(identity_port: Box<dyn IdentityPort>) -> Self {
+        Self { identity_port }
+    }
 
-        Ok(traits)
+    pub async fn execute(&self, cookie: Option<&str>) -> Result<UserProfile, IdentityError> {
+        let cookie = cookie.ok_or(IdentityError::NotAuthenticated)?;
+
+        let user = self.identity_port.get_current_user(cookie).await?;
+
+        Ok(user)
     }
 }
