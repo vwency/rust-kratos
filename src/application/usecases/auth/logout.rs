@@ -4,6 +4,7 @@ pub struct LogoutUseCase {
     session_port: Box<dyn SessionPort>,
 }
 
+#[allow(unused)]
 impl LogoutUseCase {
     pub fn new(session_port: Box<dyn SessionPort>) -> Self {
         Self { session_port }

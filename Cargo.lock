@@ -2343,7 +2343,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-gateway"
+name = "rust-ini"
+version = "0.21.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "796e8d2b6696392a43bea58116b667fb4c29727dc5abd27d6acf338bb4f688c7"
+dependencies = [
+ "cfg-if",
+ "ordered-multimap",
+]
+
+[[package]]
+name = "rust_gateway"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
@@ -2365,16 +2375,6 @@ dependencies = [
  "tracing-actix-web",
  "tracing-subscriber",
  "validator",
-]
-
-[[package]]
-name = "rust-ini"
-version = "0.21.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "796e8d2b6696392a43bea58116b667fb4c29727dc5abd27d6acf338bb4f688c7"
-dependencies = [
- "cfg-if",
- "ordered-multimap",
 ]
 
 [[package]]

@@ -5,6 +5,7 @@ pub struct RegisterUseCase {
     registration_port: Box<dyn RegistrationPort>,
 }
 
+#[allow(unused)]
 impl RegisterUseCase {
     pub fn new(registration_port: Box<dyn RegistrationPort>) -> Self {
         Self { registration_port }

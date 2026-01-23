@@ -1,3 +1,4 @@
+pub mod flows;
 pub mod identity;
 pub mod login;
 pub mod logout;

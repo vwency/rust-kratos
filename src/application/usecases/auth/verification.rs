@@ -7,6 +7,7 @@ pub struct VerificationUseCase {
     verification_port: Box<dyn VerificationPort>,
 }
 
+#[allow(unused)]
 impl VerificationUseCase {
     pub fn new(verification_port: Box<dyn VerificationPort>) -> Self {
         Self { verification_port }

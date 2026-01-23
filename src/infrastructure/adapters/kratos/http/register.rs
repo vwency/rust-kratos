@@ -1,6 +1,6 @@
 use crate::domain::ports::registration::{RegistrationData, RegistrationError, RegistrationPort};
 use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
+use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
 
 #[allow(unused)]

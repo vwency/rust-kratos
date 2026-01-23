@@ -1,7 +1,7 @@
 use crate::application::config::ServerConfig;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
-use crate::presentation::graphql::schema::AppSchema;
-use crate::presentation::rest::{email_sender, health_check};
+use crate::presentation::api::graphql::schema::AppSchema;
+use crate::presentation::api::rest::{email_sender, health_check};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
