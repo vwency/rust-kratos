@@ -22,6 +22,7 @@ impl From<LoginInput> for LoginCredentials {
     }
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum AuthError {
     AlreadyLoggedIn,

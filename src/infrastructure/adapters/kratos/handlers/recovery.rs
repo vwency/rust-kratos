@@ -4,10 +4,12 @@ use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
 use tracing::debug;
 
+#[allow(unused)]
 pub struct KratosRecoveryAdapter {
     client: KratosClient,
 }
 
+#[allow(unused)]
 impl KratosRecoveryAdapter {
     pub fn new(client: KratosClient) -> Self {
         Self { client }

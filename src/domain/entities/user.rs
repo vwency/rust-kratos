@@ -1,6 +1,7 @@
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 
+#[allow(unused)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: String,

@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum SessionError {
     NotAuthenticated,

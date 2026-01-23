@@ -12,6 +12,7 @@ impl From<RecoveryInput> for RecoveryRequest {
     }
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum RecoveryError {
     FlowNotFound,

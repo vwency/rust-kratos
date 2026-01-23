@@ -6,11 +6,13 @@ use crate::infrastructure::adapters::kratos::handlers::logout::KratosSessionAdap
 use async_trait::async_trait;
 use tracing::error;
 
+#[allow(unused)]
 pub struct KratosAuthenticationAdapter {
     client: KratosClient,
     session_adapter: KratosSessionAdapter,
 }
 
+#[allow(unused)]
 impl KratosAuthenticationAdapter {
     pub fn new(client: KratosClient) -> Self {
         let session_adapter = KratosSessionAdapter::new(client.clone());

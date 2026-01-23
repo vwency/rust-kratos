@@ -3,10 +3,12 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
 
+#[allow(unused)]
 pub struct KratosRegistrationAdapter {
     client: KratosClient,
 }
 
+#[allow(unused)]
 impl KratosRegistrationAdapter {
     pub fn new(client: KratosClient) -> Self {
         Self { client }

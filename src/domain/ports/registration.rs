@@ -1,6 +1,7 @@
 use crate::domain::graphql::inputs::RegisterInput;
 use async_trait::async_trait;
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct RegistrationData {
     pub email: String,
@@ -20,6 +21,7 @@ impl From<RegisterInput> for RegistrationData {
     }
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum RegistrationError {
     FlowNotFound,

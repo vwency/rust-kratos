@@ -49,6 +49,7 @@ impl From<SubmitVerificationCodeInput> for SubmitCodeRequest {
     }
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum VerificationError {
     FlowNotFound,

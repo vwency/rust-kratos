@@ -4,10 +4,12 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use async_trait::async_trait;
 use reqwest::header;
 
+#[allow(unused)]
 pub struct KratosIdentityAdapter {
     client: KratosClient,
 }
 
+#[allow(unused)]
 impl KratosIdentityAdapter {
     pub fn new(client: KratosClient) -> Self {
         Self { client }
