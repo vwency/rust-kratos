@@ -2,17 +2,17 @@ use crate::domain::graphql::inputs::{
     SendVerificationCodeInput, SubmitVerificationCodeInput, VerifyByLinkInput,
 };
 use crate::domain::ports::{VerificationError, VerificationPort};
+use std::sync::Arc;
 
 pub struct VerificationUseCase {
-    verification_port: Box<dyn VerificationPort>,
+    verification_port: Arc<dyn VerificationPort>,
 }
 
 #[allow(unused)]
 impl VerificationUseCase {
-    pub fn new(verification_port: Box<dyn VerificationPort>) -> Self {
+    pub fn new(verification_port: Arc<dyn VerificationPort>) -> Self {
         Self { verification_port }
     }
-
     pub async fn execute_link(
         &self,
         input: VerifyByLinkInput,
@@ -22,7 +22,6 @@ impl VerificationUseCase {
             .verify_by_link(input.into(), cookie)
             .await
     }
-
     pub async fn execute_code_send(
         &self,
         input: SendVerificationCodeInput,
@@ -32,7 +31,6 @@ impl VerificationUseCase {
             .send_verification_code(input.into(), cookie)
             .await
     }
-
     pub async fn execute_code_submit(
         &self,
         input: SubmitVerificationCodeInput,

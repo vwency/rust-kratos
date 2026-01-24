@@ -41,3 +41,15 @@ pub struct SubmitVerificationCodeInput {
     pub code: String,
     pub transient_payload: Option<Value>,
 }
+
+#[derive(InputObject, Clone, Serialize, Deserialize, Debug)]
+pub struct UpdateSettingsInput {
+    pub method: String,
+    pub password: Option<String>,
+    pub traits: Option<Value>,
+    pub lookup_secret_confirm: Option<bool>,
+    pub lookup_secret_disable: Option<bool>,
+    pub lookup_secret_regenerate: Option<bool>,
+    pub lookup_secret_reveal: Option<bool>,
+    pub transient_payload: Option<Value>,
+}

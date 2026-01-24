@@ -2,15 +2,14 @@ use crate::domain::ports::registration::{RegistrationData, RegistrationError, Re
 use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
+use std::sync::Arc;
 
-#[allow(unused)]
 pub struct KratosRegistrationAdapter {
-    client: KratosClient,
+    client: Arc<KratosClient>,
 }
 
-#[allow(unused)]
 impl KratosRegistrationAdapter {
-    pub fn new(client: KratosClient) -> Self {
+    pub fn new(client: Arc<KratosClient>) -> Self {
         Self { client }
     }
 }
