@@ -1,4 +1,4 @@
-use crate::application::config::Config;
+use crate::application::bootstrap::config::Config;
 use crate::application::usecases::auth::get_current_user::GetCurrentUserUseCase;
 use crate::application::usecases::auth::login::LoginUseCase;
 use crate::application::usecases::auth::logout::LogoutUseCase;
