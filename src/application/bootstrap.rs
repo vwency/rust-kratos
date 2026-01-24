@@ -10,15 +10,21 @@ use tracing_subscriber::EnvFilter;
 pub async fn run() -> anyhow::Result<()> {
     init_tracing()?;
     info!("Starting application...");
+
     info!("Loading configuration...");
     let config = Config::from_env()?;
+
     info!("Initializing dependency injection container...");
-    let container = AppContainer::new(&config);
+    let container = AppContainer::new(&config)?;
+
     info!("Creating GraphQL schema...");
-    let schema = Arc::new(create_schema(container));
+    let schema = Arc::new(create_schema(&container));
+
     let server_handle = tokio::spawn(server::start(schema, config.server));
+
     shutdown_signal().await;
     info!("Shutdown signal received, starting graceful shutdown...");
+
     match server_handle.await {
         Ok(result) => result,
         Err(e) => Err(anyhow::anyhow!("Server task panicked: {}", e)),
@@ -26,16 +32,12 @@ pub async fn run() -> anyhow::Result<()> {
 }
 
 fn init_tracing() -> anyhow::Result<()> {
-    if let Err(e) = tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("info"))
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .try_init()
-    {
-        return Err(anyhow::anyhow!(
-            "Failed to initialize tracing subscriber: {}",
-            e
-        ));
-    }
-    Ok(())
+        .map_err(|e| anyhow::anyhow!("Failed to initialize tracing subscriber: {}", e))
 }
 
 async fn shutdown_signal() {
@@ -44,6 +46,7 @@ async fn shutdown_signal() {
             .await
             .expect("Failed to install Ctrl+C handler");
     };
+
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -51,8 +54,10 @@ async fn shutdown_signal() {
             .recv()
             .await;
     };
+
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
+
     tokio::select! {
         _ = ctrl_c => {
             info!("Received Ctrl+C signal");

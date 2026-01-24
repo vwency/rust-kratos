@@ -6,35 +6,8 @@ use crate::application::usecases::auth::recovery::RecoveryUseCase;
 use crate::application::usecases::auth::register::RegisterUseCase;
 use crate::application::usecases::auth::verification::VerificationUseCase;
 use crate::infrastructure::adapters::kratos::KratosClient;
-use crate::infrastructure::adapters::kratos::http::identity::KratosIdentityAdapter;
-use crate::infrastructure::adapters::kratos::http::login::KratosAuthenticationAdapter;
-use crate::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
-use crate::infrastructure::adapters::kratos::http::recovery::KratosRecoveryAdapter;
-use crate::infrastructure::adapters::kratos::http::register::KratosRegistrationAdapter;
-use crate::infrastructure::adapters::kratos::http::verification::KratosVerificationAdapter;
+use crate::infrastructure::di::factory::KratosAdapterFactory;
 use std::sync::Arc;
-
-struct Adapters {
-    registration: KratosRegistrationAdapter,
-    authentication: KratosAuthenticationAdapter,
-    session: KratosSessionAdapter,
-    recovery: KratosRecoveryAdapter,
-    verification: KratosVerificationAdapter,
-    identity: KratosIdentityAdapter,
-}
-
-impl Adapters {
-    fn new(kratos_client: Arc<KratosClient>) -> Self {
-        Self {
-            registration: KratosRegistrationAdapter::new(kratos_client.clone()),
-            authentication: KratosAuthenticationAdapter::new(kratos_client.clone()),
-            session: KratosSessionAdapter::new(kratos_client.clone()),
-            recovery: KratosRecoveryAdapter::new(kratos_client.clone()),
-            verification: KratosVerificationAdapter::new(kratos_client.clone()),
-            identity: KratosIdentityAdapter::new(kratos_client),
-        }
-    }
-}
 
 pub struct UseCases {
     pub register: Arc<RegisterUseCase>,
@@ -46,14 +19,18 @@ pub struct UseCases {
 }
 
 impl UseCases {
-    fn new(adapters: Adapters) -> Self {
+    fn new(factory: Arc<KratosAdapterFactory>) -> Self {
         Self {
-            register: Arc::new(RegisterUseCase::new(Box::new(adapters.registration))),
-            login: Arc::new(LoginUseCase::new(Box::new(adapters.authentication))),
-            logout: Arc::new(LogoutUseCase::new(Box::new(adapters.session))),
-            recovery: Arc::new(RecoveryUseCase::new(Box::new(adapters.recovery))),
-            verification: Arc::new(VerificationUseCase::new(Box::new(adapters.verification))),
-            get_current_user: Arc::new(GetCurrentUserUseCase::new(Box::new(adapters.identity))),
+            register: Arc::new(RegisterUseCase::new(factory.create_registration_adapter())),
+            login: Arc::new(LoginUseCase::new(factory.create_authentication_adapter())),
+            logout: Arc::new(LogoutUseCase::new(factory.create_session_adapter())),
+            recovery: Arc::new(RecoveryUseCase::new(factory.create_recovery_adapter())),
+            verification: Arc::new(VerificationUseCase::new(
+                factory.create_verification_adapter(),
+            )),
+            get_current_user: Arc::new(GetCurrentUserUseCase::new(
+                factory.create_identity_adapter(),
+            )),
         }
     }
 }
@@ -61,6 +38,7 @@ impl UseCases {
 #[derive(Clone)]
 pub struct AppContainer {
     pub use_cases: Arc<UseCases>,
+    _factory: Arc<KratosAdapterFactory>,
 }
 
 impl AppContainer {
@@ -68,10 +46,13 @@ impl AppContainer {
         Self::validate_config(config)?;
 
         let kratos_client = Arc::new(KratosClient::new(&config.kratos));
-        let adapters = Adapters::new(kratos_client);
-        let use_cases = Arc::new(UseCases::new(adapters));
+        let factory = Arc::new(KratosAdapterFactory::new(kratos_client));
+        let use_cases = Arc::new(UseCases::new(factory.clone()));
 
-        Ok(Self { use_cases })
+        Ok(Self {
+            use_cases,
+            _factory: factory,
+        })
     }
 
     fn validate_config(config: &Config) -> Result<(), ContainerError> {
