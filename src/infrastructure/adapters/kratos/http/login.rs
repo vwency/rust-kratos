@@ -4,17 +4,18 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use crate::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
 use async_trait::async_trait;
+use std::sync::Arc;
 use tracing::{debug, error};
 
 #[allow(unused)]
 pub struct KratosAuthenticationAdapter {
-    client: KratosClient,
+    client: Arc<KratosClient>,
     session_adapter: KratosSessionAdapter,
 }
 
 #[allow(unused)]
 impl KratosAuthenticationAdapter {
-    pub fn new(client: KratosClient) -> Self {
+    pub fn new(client: Arc<KratosClient>) -> Self {
         let session_adapter = KratosSessionAdapter::new(client.clone());
         Self {
             client,
@@ -30,7 +31,6 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
             error!("Login attempt with an already active session");
             return Err(AuthError::AlreadyLoggedIn);
         }
-
         let flow = fetch_flow(
             &self.client.client,
             &self.client.public_url,
@@ -39,13 +39,11 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
         )
         .await
         .map_err(|e| AuthError::NetworkError(e.to_string()))?;
-
         flow.flow["id"]
             .as_str()
             .map(|s| s.to_string())
             .ok_or_else(|| AuthError::FlowNotFound)
     }
-
     async fn complete_login(
         &self,
         flow_id: &str,
@@ -54,36 +52,28 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
         let flow = fetch_flow(&self.client.client, &self.client.public_url, "login", None)
             .await
             .map_err(|e| AuthError::NetworkError(e.to_string()))?;
-
         let csrf_token = flow.csrf_token.clone();
-
         debug!("Using flow_id: {}, csrf_token: {}", flow_id, csrf_token);
-
         let mut payload = serde_json::json!({
             "method": "password",
             "identifier": credentials.identifier,
             "password": credentials.password,
             "csrf_token": csrf_token,
         });
-
         if let Some(addr) = credentials.address {
             payload["address"] = serde_json::json!(addr);
         }
-
         if let Some(code) = credentials.code {
             payload["code"] = serde_json::json!(code);
             payload["method"] = serde_json::json!("code");
         }
-
         if let Some(resend) = credentials.resend {
             payload["resend"] = serde_json::json!(resend);
         }
-
         debug!(
             "Login payload: {}",
             serde_json::to_string_pretty(&payload).unwrap()
         );
-
         let result = post_flow(
             &self.client.client,
             &self.client.public_url,
@@ -97,21 +87,17 @@ impl AuthenticationPort for KratosAuthenticationAdapter {
             error!("Failed to post login flow: {}", e);
             AuthError::NetworkError(e.to_string())
         })?;
-
         debug!("Received cookies: {:?}", result.cookies);
         debug!("Response data: {:?}", result.data);
-
         if let Some(session) = result.data.get("session") {
             debug!("Session data present: {:?}", session);
         }
-
         if result.cookies.is_empty() {
             error!("No cookies in response");
             return Err(AuthError::UnknownError(
                 "No cookies received from server".to_string(),
             ));
         }
-
         result
             .cookies
             .into_iter()

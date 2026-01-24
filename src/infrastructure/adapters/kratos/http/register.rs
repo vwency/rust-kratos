@@ -2,15 +2,16 @@ use crate::domain::ports::registration::{RegistrationData, RegistrationError, Re
 use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
+use std::sync::Arc;
 
 #[allow(unused)]
 pub struct KratosRegistrationAdapter {
-    client: KratosClient,
+    client: Arc<KratosClient>,
 }
 
 #[allow(unused)]
 impl KratosRegistrationAdapter {
-    pub fn new(client: KratosClient) -> Self {
+    pub fn new(client: Arc<KratosClient>) -> Self {
         Self { client }
     }
 }
@@ -29,13 +30,11 @@ impl RegistrationPort for KratosRegistrationAdapter {
         )
         .await
         .map_err(|e| RegistrationError::NetworkError(e.to_string()))?;
-
         flow.flow["id"]
             .as_str()
             .map(|s| s.to_string())
             .ok_or_else(|| RegistrationError::FlowNotFound)
     }
-
     async fn complete_registration(
         &self,
         flow_id: &str,
@@ -49,7 +48,6 @@ impl RegistrationPort for KratosRegistrationAdapter {
         )
         .await
         .map_err(|e| RegistrationError::NetworkError(e.to_string()))?;
-
         let payload = serde_json::json!({
             "method": "password",
             "password": data.password,
@@ -59,7 +57,6 @@ impl RegistrationPort for KratosRegistrationAdapter {
             },
             "csrf_token": flow.csrf_token,
         });
-
         let result = post_flow(
             &self.client.client,
             &self.client.public_url,
@@ -70,14 +67,12 @@ impl RegistrationPort for KratosRegistrationAdapter {
         )
         .await
         .map_err(|e| RegistrationError::NetworkError(e.to_string()))?;
-
         let response_data = &result.data;
         if response_data.get("session").is_none() && response_data.get("identity").is_none() {
             return Err(RegistrationError::UnknownError(
                 "Neither session nor identity found in response".to_string(),
             ));
         }
-
         result
             .cookies
             .into_iter()
