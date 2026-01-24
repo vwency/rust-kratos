@@ -1,28 +1,33 @@
-use crate::domain::graphql::inputs::RegisterInput;
-use crate::domain::ports::{RegistrationError, RegistrationPort};
+use crate::domain::ports::registration::{RegistrationData, RegistrationError, RegistrationPort};
+use std::sync::Arc;
 
 pub struct RegisterUseCase {
-    registration_port: Box<dyn RegistrationPort>,
+    registration_port: Arc<dyn RegistrationPort>,
 }
 
-#[allow(unused)]
 impl RegisterUseCase {
-    pub fn new(registration_port: Box<dyn RegistrationPort>) -> Self {
+    pub fn new(registration_port: Arc<dyn RegistrationPort>) -> Self {
         Self { registration_port }
     }
 
     pub async fn execute(
         &self,
-        input: RegisterInput,
-        cookie: Option<&str>,
-    ) -> Result<String, RegistrationError> {
-        let flow_id = self.registration_port.initiate_registration(cookie).await?;
-
-        let session_token = self
+        data: RegistrationData,
+    ) -> Result<RegisterResult, RegistrationError> {
+        let flow_id = self.registration_port.initiate_registration(None).await?;
+        let session_cookie = self
             .registration_port
-            .complete_registration(&flow_id, input.into())
+            .complete_registration(&flow_id, data)
             .await?;
 
-        Ok(session_token)
+        Ok(RegisterResult {
+            flow_id,
+            session_cookie,
+        })
     }
+}
+
+pub struct RegisterResult {
+    pub flow_id: String,
+    pub session_cookie: String,
 }

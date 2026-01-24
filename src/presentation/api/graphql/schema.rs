@@ -27,11 +27,6 @@ pub fn create_schema(container: &AppContainer) -> AppSchema {
         MutationRoot::default(),
         EmptySubscription,
     )
-    .data(container.use_cases.register.clone())
-    .data(container.use_cases.login.clone())
-    .data(container.use_cases.logout.clone())
-    .data(container.use_cases.recovery.clone())
-    .data(container.use_cases.verification.clone())
-    .data(container.use_cases.get_current_user.clone())
+    .data(container.use_cases.clone())
     .finish()
 }
