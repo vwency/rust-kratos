@@ -1,4 +1,4 @@
-use crate::domain::ports::{
+use crate::contexts::auth::domain::ports::{
     auth::AuthenticationPort, identity::IdentityPort, recovery::RecoveryPort,
     registration::RegistrationPort, session::SessionPort, verification::VerificationPort,
 };

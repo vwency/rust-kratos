@@ -1,4 +1,4 @@
-use crate::domain::graphql::inputs::RegisterInput;
+use crate::contexts::auth::domain::graphql::inputs::RegisterInput;
 use crate::infrastructure::adapters::graphql::cookies::ResponseCookies;
 use crate::infrastructure::di::container::UseCases;
 use async_graphql::{Context, Object, Result};

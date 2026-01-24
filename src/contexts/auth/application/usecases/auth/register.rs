@@ -1,4 +1,6 @@
-use crate::domain::ports::registration::{RegistrationData, RegistrationError, RegistrationPort};
+use crate::contexts::auth::domain::ports::registration::{
+    RegistrationData, RegistrationError, RegistrationPort,
+};
 use std::sync::Arc;
 
 pub struct RegisterUseCase {

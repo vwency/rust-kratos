@@ -1,5 +1,5 @@
-use crate::application::usecases::auth::get_current_user::GetCurrentUserUseCase;
-use crate::domain::entities::user::UserProfile;
+use crate::contexts::auth::application::usecases::auth::get_current_user::GetCurrentUserUseCase;
+use crate::contexts::auth::domain::entities::user::UserProfile;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]

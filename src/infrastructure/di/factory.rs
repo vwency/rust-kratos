@@ -1,15 +1,15 @@
 use crate::bootstrap::config::KratosConfig;
-use crate::domain::ports::{
+use crate::contexts::auth::domain::ports::{
     auth::AuthenticationPort, identity::IdentityPort, recovery::RecoveryPort,
     registration::RegistrationPort, session::SessionPort, verification::VerificationPort,
 };
-use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::http::identity::KratosIdentityAdapter;
-use crate::infrastructure::adapters::kratos::http::login::KratosAuthenticationAdapter;
-use crate::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
-use crate::infrastructure::adapters::kratos::http::recovery::KratosRecoveryAdapter;
-use crate::infrastructure::adapters::kratos::http::register::KratosRegistrationAdapter;
-use crate::infrastructure::adapters::kratos::http::verification::KratosVerificationAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::client::KratosClient;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::identity::KratosIdentityAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::login::KratosAuthenticationAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::logout::KratosSessionAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::recovery::KratosRecoveryAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::register::KratosRegistrationAdapter;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::verification::KratosVerificationAdapter;
 use crate::infrastructure::di::adapter_factory::AdapterFactory;
 use std::sync::Arc;
 

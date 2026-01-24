@@ -1,8 +1,8 @@
-use crate::domain::ports::verification::{
+use crate::contexts::auth::domain::ports::verification::{
     SendCodeRequest, SubmitCodeRequest, VerificationError, VerificationPort, VerifyByLinkRequest,
 };
-use crate::infrastructure::adapters::kratos::client::KratosClient;
-use crate::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
+use crate::contexts::auth::infrastructure::adapters::kratos::client::KratosClient;
+use crate::contexts::auth::infrastructure::adapters::kratos::http::flows::{fetch_flow, post_flow};
 use async_trait::async_trait;
 use std::sync::Arc;
 

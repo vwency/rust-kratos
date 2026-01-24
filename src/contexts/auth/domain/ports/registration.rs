@@ -1,4 +1,4 @@
-use crate::domain::graphql::inputs::RegisterInput;
+use crate::contexts::auth::domain::graphql::inputs::RegisterInput;
 use async_trait::async_trait;
 
 #[allow(unused)]

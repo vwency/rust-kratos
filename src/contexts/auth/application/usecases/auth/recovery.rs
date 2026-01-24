@@ -1,5 +1,5 @@
-use crate::domain::graphql::inputs::RecoveryInput;
-use crate::domain::ports::{RecoveryError, RecoveryPort};
+use crate::contexts::auth::domain::graphql::inputs::RecoveryInput;
+use crate::contexts::auth::domain::ports::{RecoveryError, RecoveryPort};
 use std::sync::Arc;
 use tracing::{error, info};
 

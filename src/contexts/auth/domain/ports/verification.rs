@@ -1,4 +1,4 @@
-use crate::domain::graphql::inputs::{
+use crate::contexts::auth::domain::graphql::inputs::{
     SendVerificationCodeInput, SubmitVerificationCodeInput, VerifyByLinkInput,
 };
 use async_trait::async_trait;

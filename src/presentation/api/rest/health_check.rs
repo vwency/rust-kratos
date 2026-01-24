@@ -1,4 +1,4 @@
-use crate::application::usecases::health_check::HealthCheck;
+use crate::contexts::auth::application::usecases::health_check::HealthCheck;
 use actix_web::{HttpResponse, Responder, get};
 use tracing::instrument;
 

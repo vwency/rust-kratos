@@ -1,5 +1,5 @@
-use crate::application::usecases::auth::recovery::RecoveryUseCase;
-use crate::domain::graphql::inputs::RecoveryInput;
+use crate::contexts::auth::application::usecases::auth::recovery::RecoveryUseCase;
+use crate::contexts::auth::domain::graphql::inputs::RecoveryInput;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]

@@ -1,4 +1,4 @@
-use crate::domain::graphql::inputs::RecoveryInput;
+use crate::contexts::auth::domain::graphql::inputs::RecoveryInput;
 use async_trait::async_trait;
 
 #[derive(Debug, Clone)]

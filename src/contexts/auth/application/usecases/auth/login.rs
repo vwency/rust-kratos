@@ -1,5 +1,5 @@
-use crate::domain::graphql::inputs::LoginInput;
-use crate::domain::ports::auth::AuthenticationPort;
+use crate::contexts::auth::domain::graphql::inputs::LoginInput;
+use crate::contexts::auth::domain::ports::auth::AuthenticationPort;
 use std::sync::Arc;
 
 pub struct LoginUseCase {

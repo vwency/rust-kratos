@@ -1,4 +1,4 @@
-use crate::domain::ports::{SessionError, SessionPort};
+use crate::contexts::auth::domain::ports::{SessionError, SessionPort};
 use std::sync::Arc;
 
 pub struct LogoutUseCase {

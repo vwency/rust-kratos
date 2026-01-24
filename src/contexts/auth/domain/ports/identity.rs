@@ -1,4 +1,4 @@
-use crate::domain::entities::user::UserProfile;
+use crate::contexts::auth::domain::entities::user::UserProfile;
 use async_trait::async_trait;
 
 #[allow(unused)]

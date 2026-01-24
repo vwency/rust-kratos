@@ -1,7 +1,7 @@
-use crate::domain::graphql::inputs::{
+use crate::contexts::auth::domain::graphql::inputs::{
     SendVerificationCodeInput, SubmitVerificationCodeInput, VerifyByLinkInput,
 };
-use crate::domain::ports::{VerificationError, VerificationPort};
+use crate::contexts::auth::domain::ports::{VerificationError, VerificationPort};
 use std::sync::Arc;
 
 pub struct VerificationUseCase {

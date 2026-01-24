@@ -1,5 +1,4 @@
-pub mod application;
 pub mod bootstrap;
-pub mod domain;
+pub mod contexts;
 pub mod infrastructure;
 pub mod presentation;

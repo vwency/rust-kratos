@@ -1,4 +1,4 @@
-use crate::application::usecases::auth::logout::LogoutUseCase;
+use crate::contexts::auth::application::usecases::auth::logout::LogoutUseCase;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]

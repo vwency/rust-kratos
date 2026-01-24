@@ -1,4 +1,4 @@
-use crate::domain::graphql::inputs::LoginInput;
+use crate::contexts::auth::domain::graphql::inputs::LoginInput;
 use async_trait::async_trait;
 
 #[derive(Debug, Clone)]

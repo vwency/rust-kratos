@@ -1,5 +1,5 @@
-use crate::domain::entities::user::UserProfile;
-use crate::domain::ports::{IdentityError, IdentityPort};
+use crate::contexts::auth::domain::entities::user::UserProfile;
+use crate::contexts::auth::domain::ports::{IdentityError, IdentityPort};
 use std::sync::Arc;
 
 pub struct GetCurrentUserUseCase {

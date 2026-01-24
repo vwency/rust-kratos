@@ -1,6 +1,6 @@
-use crate::domain::entities::user::UserProfile;
-use crate::domain::ports::session::{SessionError, SessionPort};
-use crate::infrastructure::adapters::kratos::client::KratosClient;
+use crate::contexts::auth::domain::entities::user::UserProfile;
+use crate::contexts::auth::domain::ports::session::{SessionError, SessionPort};
+use crate::contexts::auth::infrastructure::adapters::kratos::client::KratosClient;
 use async_trait::async_trait;
 use reqwest::header;
 use std::sync::Arc;
