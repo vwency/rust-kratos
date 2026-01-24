@@ -1,4 +1,4 @@
-use crate::application::config::Config;
+use crate::bootstrap::config::Config;
 use crate::infrastructure::adapters::http::server;
 use crate::infrastructure::di::container::AppContainer;
 use crate::presentation::api::graphql::schema::create_schema;

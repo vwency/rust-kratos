@@ -1,10 +1,10 @@
-use crate::application::config::Config;
 use crate::application::usecases::auth::get_current_user::GetCurrentUserUseCase;
 use crate::application::usecases::auth::login::LoginUseCase;
 use crate::application::usecases::auth::logout::LogoutUseCase;
 use crate::application::usecases::auth::recovery::RecoveryUseCase;
 use crate::application::usecases::auth::register::RegisterUseCase;
 use crate::application::usecases::auth::verification::VerificationUseCase;
+use crate::bootstrap::config::Config;
 use crate::infrastructure::di::adapter_factory::AdapterFactory;
 use std::sync::Arc;
 

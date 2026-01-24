@@ -1,4 +1,4 @@
-use crate::application::config::ServerConfig;
+use crate::bootstrap::config::ServerConfig;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
 use crate::presentation::api::graphql::schema::AppSchema;
 use crate::presentation::api::rest::{email_sender, health_check};
