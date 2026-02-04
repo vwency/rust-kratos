@@ -1,6 +1,35 @@
 use serde::Deserialize;
 use std::env;
 
+#[derive(Debug, Clone, Copy)]
+pub enum Environment {
+    Development,
+    Production,
+    DockerLocal,
+}
+
+impl Environment {
+    pub fn from_env() -> Self {
+        match env::var("APP_ENV")
+            .unwrap_or_else(|_| String::from("development"))
+            .to_lowercase()
+            .as_str()
+        {
+            "production" => Environment::Production,
+            "docker_local" => Environment::DockerLocal,
+            _ => Environment::Development,
+        }
+    }
+
+    pub fn config_filename(&self) -> &str {
+        match self {
+            Environment::Development => "development",
+            Environment::Production => "production",
+            Environment::DockerLocal => "docker_local",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub kratos: KratosConfig,
@@ -33,6 +62,27 @@ pub struct ServerConfig {
     pub port: u16,
 }
 
+impl Config {
+    pub fn from_env() -> Result<Self, config::ConfigError> {
+        let environment = Environment::from_env();
+        let config_path = format!("config/app/{}", environment.config_filename());
+
+        let builder = config::Config::builder()
+            .add_source(
+                config::File::with_name(&config_path)
+                    .required(true)
+                    .format(config::FileFormat::Toml),
+            )
+            .add_source(
+                config::Environment::with_prefix("APP")
+                    .separator("__")
+                    .try_parsing(true),
+            );
+
+        builder.build()?.try_deserialize()
+    }
+}
+
 fn default_timeout() -> u64 {
     120
 }
@@ -59,26 +109,4 @@ fn default_retry_delay() -> u64 {
 
 fn default_accept_invalid_certs() -> bool {
     false
-}
-
-impl Config {
-    pub fn from_env() -> Result<Self, config::ConfigError> {
-        let env_var = env::var("APP_ENV").unwrap_or_else(|_| String::from("development"));
-
-        let config_path = format!("config/app/{}", env_var);
-
-        let builder = config::Config::builder()
-            .add_source(
-                config::File::with_name(&config_path)
-                    .required(true)
-                    .format(config::FileFormat::Toml),
-            )
-            .add_source(
-                config::Environment::with_prefix("APP")
-                    .separator("__")
-                    .try_parsing(true),
-            );
-
-        builder.build()?.try_deserialize()
-    }
 }

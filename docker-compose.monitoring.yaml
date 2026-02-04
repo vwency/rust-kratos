@@ -15,6 +15,7 @@ services:
       - "--web.enable-lifecycle"
     networks:
       - infra-network
+      - kratos-network
     restart: unless-stopped
     healthcheck:
       test:
@@ -127,9 +128,15 @@ networks:
   infra-network:
     driver: bridge
     name: infra-network
-
+  kratos-network:
+    driver: bridge
+    name: kratos-network
 volumes:
   prometheus-data:
+    name: prometheus-data
   grafana-data:
+    name: grafana-data
   alertmanager-data:
+    name: alertmanager-data
   loki-data:
+    name: loki-data

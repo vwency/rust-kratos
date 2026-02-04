@@ -1,5 +1,5 @@
 [package]
-name = "rust_gateway"
+name = "rust_kratos"
 version = "0.1.0"
 edition = "2024"
 
@@ -15,7 +15,7 @@ actix-cors = "0.7"
 dotenv = { version = "0.15.0" }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 anyhow = "1.0"
 serde_json = { version = "1.0.149" }
 async-trait = { version = "0.1.89" }

@@ -1,14 +1,28 @@
-.PHONY: infra-up infra-down run dev
+.PHONY: run-full infra-up infra-down monitoring-up run dev cleanup
 
 COMPOSE = docker compose
 
 RUST_BIN = cargo
 RUST_ARGS = run
 
-infra-up:
+run-full:
+	$(COMPOSE) -f docker-compose.monitoring.yaml up -d
 	$(COMPOSE) up -d
 
-infra-down:
+service-up:
+	$(COMPOSE) up -d
+
+monitoring-up:
+	$(COMPOSE) -f docker-compose.monitoring.yaml up -d
+
+monitoring-down:
+	$(COMPOSE) -f docker-compose.monitoring.yaml down -v
+
+service-down:
+	$(COMPOSE) down -v
+
+cleanup:
+	$(COMPOSE) -f docker-compose.monitoring.yaml down -v
 	$(COMPOSE) down -v
 
 run:

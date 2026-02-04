@@ -1,4 +1,4 @@
-use rust_gateway::application::bootstrap::bootstrap;
+use rust_kratos::application::bootstrap::bootstrap;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {

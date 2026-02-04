@@ -1,0 +1,14 @@
+[kratos]
+admin_url = "http://kratos:4434"
+public_url = "http://kratos:4433"
+timeout_secs = 120
+connect_timeout_secs = 30
+pool_idle_timeout_secs = 120
+pool_max_idle_per_host = 10
+max_retries = 3
+retry_delay_ms = 1000
+accept_invalid_certs = true
+
+[server]
+host = "0.0.0.0"
+port = 8080

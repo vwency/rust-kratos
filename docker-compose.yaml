@@ -51,11 +51,11 @@ services:
       - kratos-migrate
     restart: unless-stopped
 
-  rust_gateway:
+  rust_kratos:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rust_gateway
+    container_name: rust_kratos
     ports:
       - "8080:8080"
     networks:
@@ -63,10 +63,14 @@ services:
     depends_on:
       - kratos
     restart: unless-stopped
+    environment:
+      APP_ENV: "docker_local"
 
 networks:
   kratos-network:
     driver: bridge
+    name: kratos-network
 
 volumes:
   kratos-db-data:
+    name: kratos-db-data
