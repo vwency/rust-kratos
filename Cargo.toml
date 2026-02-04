@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 actix-web = "4"
-async-graphql = "7.1.0"
-async-graphql-actix-web = "7.1.0"
+async-graphql = "8.0.0-rc.1"
+async-graphql-actix-web = "8.0.0-rc.1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing = { version = "0.1.44" }
 tracing-actix-web = "0.7.21"
