@@ -21,3 +21,12 @@ make run
 | Node Exporter  | http://localhost:9100/metrics | 9100       | Просто метрики, UI нет                             |
 | Loki           | http://localhost:3100      | 3100          | API для логов, обычно используется через Grafana |
 | Promtail       | Нет веб-интерфейса         | —             | Собирает логи и отправляет в Loki                 |
+
+### Available APP_ENV values
+
+| APP_ENV value    | Используемый конфиг        |
+|-----------------|----------------------------|
+| development      | development.toml     |
+| production       | production.toml      |
+| docker_local     | docker_local.toml    |
+| -       | development.toml     |
