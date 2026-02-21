@@ -1,7 +1,7 @@
 use crate::application::bootstrap::config::ServerConfig;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
 use crate::presentation::api::graphql::schema::AppSchema;
-use crate::presentation::api::rest::{email_sender, health_check};
+use crate::presentation::api::rest::{email_sender, health_check, hydra};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
@@ -13,14 +13,11 @@ use tracing_actix_web::TracingLogger;
 pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
     info!("Booting HTTP server at http://{}", bind_address);
-
     let prometheus = PrometheusMetricsBuilder::new("api")
         .endpoint("/metrics")
         .build()
         .map_err(|e| anyhow::anyhow!("Failed to build Prometheus metrics: {}", e))?;
-
     let bind_address_clone = bind_address.clone();
-
     let server = HttpServer::new(move || {
         App::new()
             .wrap(prometheus.clone())
@@ -39,17 +36,16 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
             )
             .configure(health_check::configure)
             .configure(email_sender::configure)
+            .configure(hydra::configure)
     })
     .bind(&bind_address_clone)
     .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
-
     info!(
         "✅ HTTP server successfully started on http://{}",
         bind_address
     );
     info!("🚀 GraphQL Playground: http://{}/graphql", bind_address);
     info!("📊 Prometheus Metrics: http://{}/metrics", bind_address);
-
     server
         .run()
         .await

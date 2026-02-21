@@ -9,6 +9,18 @@ max_retries = 3
 retry_delay_ms = 1000
 accept_invalid_certs = true
 
+[hydra]
+admin_url = "http://hydra:4445"
+public_url = "http://hydra:4444"
+client_id = "my-client"
+client_secret = "my-secret"
+redirect_uri = "http://localhost:8081/callback"
+timeout_secs = 120
+connect_timeout_secs = 30
+accept_invalid_certs = true
+remember_for_secs = 3600
+token_lifespan_secs = 3600
+
 [server]
 host = "0.0.0.0"
 port = 8080

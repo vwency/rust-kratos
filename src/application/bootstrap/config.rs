@@ -33,6 +33,7 @@ impl Environment {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub kratos: KratosConfig,
+    pub hydra: HydraConfig,
     pub server: ServerConfig,
 }
 
@@ -57,6 +58,25 @@ pub struct KratosConfig {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct HydraConfig {
+    pub admin_url: String,
+    pub public_url: String,
+    pub client_id: String,
+    pub client_secret: String,
+    pub redirect_uri: String,
+    #[serde(default = "default_timeout")]
+    pub timeout_secs: u64,
+    #[serde(default = "default_connect_timeout")]
+    pub connect_timeout_secs: u64,
+    #[serde(default = "default_accept_invalid_certs")]
+    pub accept_invalid_certs: bool,
+    #[serde(default = "default_remember_for")]
+    pub remember_for_secs: u64,
+    #[serde(default = "default_token_lifespan")]
+    pub token_lifespan_secs: u64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
@@ -66,7 +86,6 @@ impl Config {
     pub fn from_env() -> Result<Self, config::ConfigError> {
         let environment = Environment::from_env();
         let config_path = format!("config/app/{}", environment.config_filename());
-
         let builder = config::Config::builder()
             .add_source(
                 config::File::with_name(&config_path)
@@ -78,7 +97,6 @@ impl Config {
                     .separator("__")
                     .try_parsing(true),
             );
-
         builder.build()?.try_deserialize()
     }
 }
@@ -109,4 +127,12 @@ fn default_retry_delay() -> u64 {
 
 fn default_accept_invalid_certs() -> bool {
     false
+}
+
+fn default_remember_for() -> u64 {
+    3600
+}
+
+fn default_token_lifespan() -> u64 {
+    3600
 }
