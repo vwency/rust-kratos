@@ -10,21 +10,20 @@ use tracing_subscriber::EnvFilter;
 pub async fn run() -> anyhow::Result<()> {
     init_tracing()?;
     info!("Starting application...");
-
     info!("Loading configuration...");
     let config = Config::from_env()?;
-
     info!("Initializing dependency injection container...");
     let container = AppContainer::new(&config)?;
-
     info!("Creating GraphQL schema...");
     let schema = Arc::new(create_schema(&container));
-
-    let server_handle = tokio::spawn(server::start(schema, config.server));
-
+    let server_handle = tokio::spawn(server::start(
+        schema,
+        config.server,
+        container.hydra_client.clone(),
+        container.kratos_client.clone(),
+    ));
     shutdown_signal().await;
     info!("Shutdown signal received, starting graceful shutdown...");
-
     match server_handle.await {
         Ok(result) => result,
         Err(e) => Err(anyhow::anyhow!("Server task panicked: {}", e)),
@@ -46,7 +45,6 @@ async fn shutdown_signal() {
             .await
             .expect("Failed to install Ctrl+C handler");
     };
-
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -54,10 +52,8 @@ async fn shutdown_signal() {
             .recv()
             .await;
     };
-
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
-
     tokio::select! {
         _ = ctrl_c => {
             info!("Received Ctrl+C signal");

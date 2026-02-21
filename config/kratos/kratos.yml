@@ -52,6 +52,18 @@ selfservice:
       enabled: true
       config:
         haveibeenpwned_enabled: false
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: google
+            provider: google
+            client_id:
+            client_secret:
+            mapper_url: file:///etc/config/kratos/google.mapper.jsonnet
+            scope:
+              - email
+              - profile
     totp:
       config:
         issuer: MyApp

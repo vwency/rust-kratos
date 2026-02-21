@@ -5,6 +5,8 @@ use crate::application::usecases::auth::logout::LogoutUseCase;
 use crate::application::usecases::auth::recovery::RecoveryUseCase;
 use crate::application::usecases::auth::register::RegisterUseCase;
 use crate::application::usecases::auth::verification::VerificationUseCase;
+use crate::infrastructure::adapters::hydra::client::HydraClient;
+use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::infrastructure::di::adapter_factory::AdapterFactory;
 use std::sync::Arc;
 
@@ -33,6 +35,8 @@ impl UseCases {
 #[derive(Clone)]
 pub struct AppContainer {
     pub use_cases: Arc<UseCases>,
+    pub hydra_client: Arc<HydraClient>,
+    pub kratos_client: Arc<KratosClient>,
 }
 
 impl AppContainer {
@@ -40,7 +44,13 @@ impl AppContainer {
         Self::validate_config(config)?;
         let factory = Self::create_factory(config)?;
         let use_cases = Arc::new(UseCases::new(factory.as_ref()));
-        Ok(Self { use_cases })
+        let hydra_client = Arc::new(HydraClient::new(&config.hydra));
+        let kratos_client = Arc::new(KratosClient::new(&config.kratos));
+        Ok(Self {
+            use_cases,
+            hydra_client,
+            kratos_client,
+        })
     }
 
     fn create_factory(config: &Config) -> Result<Box<dyn AdapterFactory>, ContainerError> {

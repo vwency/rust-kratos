@@ -1,5 +1,8 @@
+use crate::infrastructure::adapters::hydra::client::HydraClient;
+use crate::infrastructure::adapters::hydra::requests::{accept_consent, get_consent_request};
 use actix_web::{HttpResponse, Responder, get, post, web};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use std::sync::Arc;
 use tracing::instrument;
 
 #[derive(Deserialize, Debug)]
@@ -11,36 +14,78 @@ pub struct ChallengeQuery {
 pub struct ConsentForm {
     consent_challenge: String,
     grant_scope: Vec<String>,
-    remember: Option<bool>,
-}
-
-#[derive(Serialize)]
-struct AcceptConsentRequest {
-    grant_scope: Vec<String>,
-    remember: bool,
-    remember_for: i64,
-    session: ConsentSession,
-}
-
-#[derive(Serialize)]
-struct ConsentSession {
-    access_token: serde_json::Value,
-    id_token: serde_json::Value,
 }
 
 #[get("/consent")]
-#[instrument]
-pub async fn consent_get(query: web::Query<ChallengeQuery>) -> impl Responder {
+#[instrument(skip(hydra))]
+pub async fn consent_get(
+    query: web::Query<ChallengeQuery>,
+    hydra: web::Data<Arc<HydraClient>>,
+) -> impl Responder {
+    let consent_req = match get_consent_request(&hydra, &query.consent_challenge).await {
+        Ok(r) => r,
+        Err(e) => {
+            return HttpResponse::InternalServerError()
+                .json(serde_json::json!({"error": e.to_string()}));
+        }
+    };
+
+    if consent_req.skip {
+        let accepted = match accept_consent(
+            &hydra,
+            &query.consent_challenge,
+            consent_req.requested_scope,
+            3600,
+        )
+        .await
+        {
+            Ok(r) => r,
+            Err(e) => {
+                return HttpResponse::InternalServerError()
+                    .json(serde_json::json!({"error": e.to_string()}));
+            }
+        };
+        return HttpResponse::Found()
+            .insert_header(("Location", accepted.redirect_to))
+            .finish();
+    }
+
     HttpResponse::Ok().json(serde_json::json!({
-        "consent_challenge": query.consent_challenge
+        "consent_challenge": query.consent_challenge,
+        "requested_scope": consent_req.requested_scope,
+        "subject": consent_req.subject,
     }))
 }
 
 #[post("/consent")]
-#[instrument]
-pub async fn consent_post(form: web::Json<ConsentForm>) -> impl Responder {
-    HttpResponse::Ok().json(serde_json::json!({
-        "consent_challenge": form.consent_challenge,
-        "grant_scope": form.grant_scope
-    }))
+#[instrument(skip(hydra))]
+pub async fn consent_post(
+    form: web::Json<ConsentForm>,
+    hydra: web::Data<Arc<HydraClient>>,
+) -> impl Responder {
+    let consent_req = match get_consent_request(&hydra, &form.consent_challenge).await {
+        Ok(r) => r,
+        Err(e) => {
+            return HttpResponse::InternalServerError()
+                .json(serde_json::json!({"error": e.to_string()}));
+        }
+    };
+
+    let scope = if form.grant_scope.is_empty() {
+        consent_req.requested_scope
+    } else {
+        form.grant_scope.clone()
+    };
+
+    let accepted = match accept_consent(&hydra, &form.consent_challenge, scope, 3600).await {
+        Ok(r) => r,
+        Err(e) => {
+            return HttpResponse::InternalServerError()
+                .json(serde_json::json!({"error": e.to_string()}));
+        }
+    };
+
+    HttpResponse::Found()
+        .insert_header(("Location", accepted.redirect_to))
+        .finish()
 }

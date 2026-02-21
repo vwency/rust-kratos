@@ -1,5 +1,7 @@
 use crate::application::bootstrap::config::ServerConfig;
 use crate::infrastructure::adapters::graphql::handlers::{graphql_handler, graphql_playground};
+use crate::infrastructure::adapters::hydra::client::HydraClient;
+use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::presentation::api::graphql::schema::AppSchema;
 use crate::presentation::api::rest::{email_sender, health_check, hydra};
 use actix_cors::Cors;
@@ -10,7 +12,12 @@ use std::sync::Arc;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Result<()> {
+pub async fn start(
+    schema: Arc<AppSchema>,
+    config: ServerConfig,
+    hydra_client: Arc<HydraClient>,
+    kratos_client: Arc<KratosClient>,
+) -> anyhow::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
     info!("Booting HTTP server at http://{}", bind_address);
     let prometheus = PrometheusMetricsBuilder::new("api")
@@ -29,6 +36,8 @@ pub async fn start(schema: Arc<AppSchema>, config: ServerConfig) -> anyhow::Resu
                     .allow_any_header(),
             )
             .app_data(web::Data::from(schema.clone()))
+            .app_data(web::Data::new(hydra_client.clone()))
+            .app_data(web::Data::new(kratos_client.clone()))
             .service(
                 web::resource("/graphql")
                     .route(web::post().to(graphql_handler))

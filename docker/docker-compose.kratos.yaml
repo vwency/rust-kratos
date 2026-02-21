@@ -36,38 +36,20 @@ services:
   kratos:
     image: docker.io/oryd/kratos:v1.3.0
     container_name: kratos
-    environment:
-      DSN: postgres://kratos:kratos_secret@postgres-kratos:5432/kratos?sslmode=disable
-      LOG_LEVEL: debug
     command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
     ports:
       - "4433:4433"
       - "4434:4434"
+    environment:
+      LOG_LEVEL: debug
     volumes:
       - ../config/kratos:/etc/config/kratos
     networks:
       - kratos-network
     depends_on:
-      - kratos-migrate
+      kratos-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
-
-  rust-kratos:
-    build:
-      context: ../
-      dockerfile: Dockerfile
-    container_name: rust_kratos
-    ports:
-      - "8080:8080"
-    networks:
-      - kratos-network
-    depends_on:
-      - kratos
-    restart: unless-stopped
-    environment:
-      APP_ENV: docker_local
-      KRATOS_PUBLIC_URL: http://kratos:4433
-      KRATOS_ADMIN_URL: http://kratos:4434
-      HYDRA_ADMIN_URL: http://hydra:4445
 
 networks:
   kratos-network:
