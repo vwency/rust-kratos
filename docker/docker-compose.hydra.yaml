@@ -1,0 +1,93 @@
+services:
+  postgres-hydra:
+    image: postgres:17-alpine
+    container_name: hydra-postgres
+    environment:
+      POSTGRES_DB: hydra
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - hydra-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  hydra-migrate:
+    image: oryd/hydra:v2.3.0
+    container_name: hydra-migrate
+    command: migrate sql --yes postgres://hydra:secret@postgres-hydra:5432/hydra?sslmode=disable
+    networks:
+      - app-network
+    depends_on:
+      postgres-hydra:
+        condition: service_healthy
+    restart: on-failure
+
+  hydra:
+    image: oryd/hydra:v2.3.0
+    container_name: hydra
+    command: serve all --config /etc/config/hydra.yml
+    volumes:
+      - ./config/hydra.yml:/etc/config/hydra.yml
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+    networks:
+      - app-network
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4444/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  hydra-client-init:
+    image: oryd/hydra:v2.3.0
+    container_name: hydra-client-init
+    volumes:
+      - ./config/register_client.sh:/register_client.sh
+    entrypoint: ["/bin/sh", "/register_client.sh"]
+    networks:
+      - app-network
+    depends_on:
+      hydra:
+        condition: service_healthy
+    restart: on-failure
+
+  rust-hydra:
+    build:
+      context: ./rust-hydra
+      dockerfile: Dockerfile
+    container_name: rust-hydra
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    depends_on:
+      hydra:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      HYDRA_PUBLIC_URL: http://hydra:4444
+      HYDRA_ADMIN_URL: http://hydra:4445
+      CLIENT_ID: my-client
+      CLIENT_SECRET: my-secret
+      REDIRECT_URI: http://localhost:8081/callback
+
+networks:
+  app-network:
+    external: true
+    name: app-network
+
+volumes:
+  hydra-db-data:
+    name: hydra-db-data
