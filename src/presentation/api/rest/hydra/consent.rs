@@ -30,31 +30,24 @@ pub async fn consent_get(
         }
     };
 
-    if consent_req.skip {
-        let accepted = match accept_consent(
-            &hydra,
-            &query.consent_challenge,
-            consent_req.requested_scope,
-            3600,
-        )
-        .await
-        {
-            Ok(r) => r,
-            Err(e) => {
-                return HttpResponse::InternalServerError()
-                    .json(serde_json::json!({"error": e.to_string()}));
-            }
-        };
-        return HttpResponse::Found()
-            .insert_header(("Location", accepted.redirect_to))
-            .finish();
-    }
+    let accepted = match accept_consent(
+        &hydra,
+        &query.consent_challenge,
+        consent_req.requested_scope,
+        3600,
+    )
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            return HttpResponse::InternalServerError()
+                .json(serde_json::json!({"error": e.to_string()}));
+        }
+    };
 
-    HttpResponse::Ok().json(serde_json::json!({
-        "consent_challenge": query.consent_challenge,
-        "requested_scope": consent_req.requested_scope,
-        "subject": consent_req.subject,
-    }))
+    HttpResponse::Found()
+        .insert_header(("Location", accepted.redirect_to))
+        .finish()
 }
 
 #[post("/consent")]
@@ -88,4 +81,8 @@ pub async fn consent_post(
     HttpResponse::Found()
         .insert_header(("Location", accepted.redirect_to))
         .finish()
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(consent_get).service(consent_post);
 }
