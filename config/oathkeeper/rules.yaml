@@ -1,0 +1,29 @@
+- id: public-route
+  match:
+    url: http://localhost:4455/login
+    methods:
+      - GET
+      - POST
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: protected-route
+  match:
+    url: http://localhost:4455/**
+    methods:
+      - GET
+      - POST
+  authenticators:
+    - handler: cookie_session
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+  errors:
+    - handler: redirect
+      config:
+        to: http://localhost:3000/login

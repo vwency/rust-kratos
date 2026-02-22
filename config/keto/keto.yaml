@@ -1,0 +1,27 @@
+dsn: postgres://keto:keto_secret@postgres-keto:5432/keto?sslmode=disable
+
+serve:
+  read:
+    port: 4466
+    host: 0.0.0.0
+  write:
+    port: 4467
+    host: 0.0.0.0
+
+log:
+  level: info
+  format: json
+
+namespaces:
+  - id: 0
+    name: users
+  - id: 1
+    name: organizations
+  - id: 2
+    name: projects
+  - id: 3
+    name: documents
+
+permissionsAndRoles:
+  expand:
+    enabled: true

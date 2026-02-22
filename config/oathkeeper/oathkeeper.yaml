@@ -1,0 +1,40 @@
+serve:
+  proxy:
+    port: 4455
+  api:
+    port: 4456
+
+errors:
+  fallback:
+    - json
+
+access_rules:
+  matching_strategy: glob
+  repositories:
+    - file:///etc/config/oathkeeper/rules.yaml
+
+authenticators:
+  cookie_session:
+    enabled: true
+    config:
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      extra_from: "@this"
+      subject_from: "identity.id"
+      only:
+        - ory_kratos_session
+  anonymous:
+    enabled: true
+
+authorizers:
+  allow:
+    enabled: true
+
+mutators:
+  noop:
+    enabled: true
+  id_token:
+    enabled: true
+    config:
+      issuer_url: http://localhost:4455
+      jwks_url: file:///etc/config/oathkeeper/jwks.json

@@ -1,0 +1,23 @@
+networks:
+  kratos-network:
+    external: true
+    name: kratos-network
+
+services:
+  oathkeeper:
+    image: oryd/oathkeeper:v0.40.7
+    container_name: oathkeeper
+    command: serve -c /etc/config/oathkeeper/oathkeeper.yaml
+    ports:
+      - "4455:4455"
+      - "4456:4456"
+    volumes:
+      - ../config/oathkeeper:/etc/config/oathkeeper:ro
+    networks:
+      - kratos-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4456/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

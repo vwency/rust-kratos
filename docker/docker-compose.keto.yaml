@@ -1,0 +1,60 @@
+networks:
+  kratos-network:
+    external: true
+    name: kratos-network
+
+volumes:
+  keto-db-data:
+    name: keto-db-data
+
+services:
+  postgres-keto:
+    image: postgres:17-alpine
+    container_name: keto-postgres
+    environment:
+      POSTGRES_DB: keto
+      POSTGRES_USER: keto
+      POSTGRES_PASSWORD: keto_secret
+    volumes:
+      - keto-db-data:/var/lib/postgresql/data
+    networks:
+      - kratos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keto"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keto-migrate:
+    image: oryd/keto:v0.12.0
+    container_name: keto-migrate
+    command: migrate up -y -c /etc/config/keto/keto.yaml
+    volumes:
+      - ../config/keto:/etc/config/keto:ro
+    networks:
+      - kratos-network
+    depends_on:
+      postgres-keto:
+        condition: service_healthy
+    restart: on-failure
+
+  keto:
+    image: oryd/keto:v0.12.0
+    container_name: keto
+    command: serve -c /etc/config/keto/keto.yaml
+    ports:
+      - "4466:4466" # read api
+      - "4467:4467" # write api
+    volumes:
+      - ../config/keto:/etc/config/keto:ro
+    networks:
+      - kratos-network
+    depends_on:
+      keto-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4466/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
