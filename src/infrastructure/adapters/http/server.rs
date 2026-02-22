@@ -5,7 +5,7 @@ use crate::infrastructure::adapters::kratos::client::KratosClient;
 use crate::presentation::api::graphql::schema::AppSchema;
 use crate::presentation::api::rest::{email_sender, health_check, hydra};
 use actix_cors::Cors;
-use actix_web::{App, HttpServer, web};
+use actix_web::{App, HttpServer, http, web};
 use actix_web_prometheus::PrometheusMetricsBuilder;
 use anyhow::Context;
 use std::sync::Arc;
@@ -20,21 +20,29 @@ pub async fn start(
 ) -> anyhow::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
     info!("Booting HTTP server at http://{}", bind_address);
+
     let prometheus = PrometheusMetricsBuilder::new("api")
         .endpoint("/metrics")
         .build()
         .map_err(|e| anyhow::anyhow!("Failed to build Prometheus metrics: {}", e))?;
+
     let bind_address_clone = bind_address.clone();
     let server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::CONTENT_TYPE,
+                http::header::ACCEPT,
+            ])
+            .supports_credentials()
+            .max_age(3600);
+
         App::new()
             .wrap(prometheus.clone())
             .wrap(TracingLogger::default())
-            .wrap(
-                Cors::default()
-                    .allow_any_origin()
-                    .allow_any_method()
-                    .allow_any_header(),
-            )
+            .wrap(cors)
             .app_data(web::Data::from(schema.clone()))
             .app_data(web::Data::new(hydra_client.clone()))
             .app_data(web::Data::new(kratos_client.clone()))
@@ -49,12 +57,14 @@ pub async fn start(
     })
     .bind(&bind_address_clone)
     .with_context(|| format!("Failed to bind server to {}", bind_address_clone))?;
+
     info!(
         "✅ HTTP server successfully started on http://{}",
         bind_address
     );
     info!("🚀 GraphQL Playground: http://{}/graphql", bind_address);
     info!("📊 Prometheus Metrics: http://{}/metrics", bind_address);
+
     server
         .run()
         .await

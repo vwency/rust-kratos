@@ -45,7 +45,7 @@
           "title": "Geographic Location"
         }
       },
-      "required": ["email", "username"],
+      "required": ["email"],
       "additionalProperties": false
     }
   }
