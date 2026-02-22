@@ -24,10 +24,10 @@ dsn: postgres://hydra:secret@postgres-hydra:5432/hydra?sslmode=disable
 urls:
   self:
     issuer: http://localhost:4444
-  login: http://localhost:8080/login
-  consent: http://localhost:8080/consent
-  logout: http://localhost:8080/logout
-  error: http://localhost:8080/error
+  login: http://localhost:3000/login
+  consent: http://localhost:3000/consent
+  logout: http://localhost:3000/logout
+  error: http://localhost:3000/error
 secrets:
   system:
     - youReallyNeedToChangeThis32CharSecret
