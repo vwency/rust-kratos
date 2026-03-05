@@ -47,4 +47,4 @@ cleanup:
 run:
 	$(RUST_BIN) $(RUST_ARGS)
 
-dev: infra-up run
+dev: infra-up mailhog-up run
