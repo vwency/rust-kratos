@@ -8,32 +8,37 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 pub async fn run() -> anyhow::Result<()> {
-    init_tracing()?;
-    info!("Starting application...");
-    info!("Loading configuration...");
     let config = Config::from_env()?;
+    init_tracing(&config.server.log_level)?;
+    info!("Starting application...");
     info!("Initializing dependency injection container...");
     let container = AppContainer::new(&config)?;
     info!("Creating GraphQL schema...");
     let schema = Arc::new(create_schema(&container));
-    let server_handle = tokio::spawn(server::start(
-        schema,
-        config.server,
-        container.hydra_client.clone(),
-        container.kratos_client.clone(),
-    ));
-    shutdown_signal().await;
-    info!("Shutdown signal received, starting graceful shutdown...");
-    match server_handle.await {
-        Ok(result) => result,
-        Err(e) => Err(anyhow::anyhow!("Server task panicked: {}", e)),
+
+    tokio::select! {
+        result = server::start(
+            schema,
+            config.server,
+            container.hydra_client.clone(),
+            container.kratos_client.clone(),
+        ) => {
+            if let Err(e) = result {
+                return Err(anyhow::anyhow!("Server error: {}", e));
+            }
+        },
+        _ = shutdown_signal() => {
+            info!("Shutdown signal received, starting graceful shutdown...");
+        }
     }
+
+    Ok(())
 }
 
-fn init_tracing() -> anyhow::Result<()> {
+fn init_tracing(log_level: &str) -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level)),
         )
         .try_init()
         .map_err(|e| anyhow::anyhow!("Failed to initialize tracing subscriber: {}", e))

@@ -80,10 +80,14 @@ pub struct HydraConfig {
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
+    #[serde(default = "default_log_level")]
+    pub log_level: String,
 }
 
 impl Config {
     pub fn from_env() -> Result<Self, config::ConfigError> {
+        dotenvy::dotenv().ok();
+
         let environment = Environment::from_env();
         let config_path = format!("config/app/{}", environment.config_filename());
         let builder = config::Config::builder()
@@ -104,35 +108,30 @@ impl Config {
 fn default_timeout() -> u64 {
     120
 }
-
 fn default_connect_timeout() -> u64 {
     30
 }
-
 fn default_pool_idle_timeout() -> u64 {
     120
 }
-
 fn default_pool_max_idle() -> usize {
     10
 }
-
 fn default_max_retries() -> u32 {
     3
 }
-
 fn default_retry_delay() -> u64 {
     1000
 }
-
 fn default_accept_invalid_certs() -> bool {
     false
 }
-
 fn default_remember_for() -> u64 {
     3600
 }
-
 fn default_token_lifespan() -> u64 {
     3600
+}
+fn default_log_level() -> String {
+    "info".to_string()
 }
