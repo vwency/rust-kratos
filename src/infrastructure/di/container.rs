@@ -4,6 +4,7 @@ use crate::application::usecases::auth::login::LoginUseCase;
 use crate::application::usecases::auth::logout::LogoutUseCase;
 use crate::application::usecases::auth::recovery::RecoveryUseCase;
 use crate::application::usecases::auth::register::RegisterUseCase;
+use crate::application::usecases::auth::settings::UpdateSettingsUseCase;
 use crate::application::usecases::auth::verification::VerificationUseCase;
 use crate::infrastructure::adapters::hydra::client::HydraClient;
 use crate::infrastructure::adapters::kratos::client::KratosClient;
@@ -17,6 +18,7 @@ pub struct UseCases {
     pub recovery: RecoveryUseCase,
     pub verification: VerificationUseCase,
     pub get_current_user: GetCurrentUserUseCase,
+    pub update_settings: UpdateSettingsUseCase,
 }
 
 impl UseCases {
@@ -28,6 +30,7 @@ impl UseCases {
             recovery: RecoveryUseCase::new(factory.create_recovery_adapter()),
             verification: VerificationUseCase::new(factory.create_verification_adapter()),
             get_current_user: GetCurrentUserUseCase::new(factory.create_identity_adapter()),
+            update_settings: UpdateSettingsUseCase::new(factory.create_settings_adapter()),
         }
     }
 }

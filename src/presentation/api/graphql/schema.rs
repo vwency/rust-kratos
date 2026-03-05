@@ -1,6 +1,7 @@
 use crate::infrastructure::di::container::AppContainer;
 use crate::presentation::api::graphql::mutations::recovery_mutation::RecoveryMutation;
 use crate::presentation::api::graphql::mutations::register_mutation::RegisterMutation;
+use crate::presentation::api::graphql::mutations::settings_mutation::SettingsMutation;
 use crate::presentation::api::graphql::mutations::verify_mutation::VerificationMutation;
 use crate::presentation::api::graphql::queries::current_user_query::CurrentUserQuery;
 use crate::presentation::api::graphql::{
@@ -16,6 +17,7 @@ pub struct MutationRoot(
     RegisterMutation,
     LoginMutation,
     RecoveryMutation,
+    SettingsMutation,
     VerificationMutation,
 );
 

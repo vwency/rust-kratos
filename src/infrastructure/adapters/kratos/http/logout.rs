@@ -87,17 +87,18 @@ impl SessionPort for KratosSessionAdapter {
             .send()
             .await
             .map_err(|e| SessionError::NetworkError(e.to_string()))?;
-        if !response.status().is_success() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(SessionError::UnknownError(format!(
-                "Logout failed: {}",
-                error_text
-            )));
+        let status = response.status();
+        if status.is_success() || status == 302 || status == 303 {
+            return Ok(());
         }
-        Ok(())
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
+        Err(SessionError::UnknownError(format!(
+            "Logout failed: {}",
+            error_text
+        )))
     }
     async fn check_active_session(&self, cookie: Option<&str>) -> bool {
         if let Some(cookie_value) = cookie {
