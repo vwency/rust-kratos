@@ -66,7 +66,7 @@ selfservice:
       privileged_session_max_age: 15m
       required_aal: highest_available
     recovery:
-      enabled: false
+      enabled: true
       ui_url: http://localhost:3000/recovery
       use: link
     verification:
@@ -116,11 +116,5 @@ identity:
     - id: default
       url: file:///etc/config/kratos/identity.schema.json
 courier:
-  delivery_strategy: http
-  http:
-    request_config:
-      url: http://localhost:3000/email
-      method: POST
-      body: file:///etc/config/kratos/.mail.api.request.jsonnet
-      headers:
-        Content-Type: application/json
+  smtp:
+    connection_uri: smtp://mailhog:1025/?disable_starttls=true

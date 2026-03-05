@@ -1,4 +1,4 @@
-.PHONY: run-full kratos-up hydra-up app-up infra-up monitoring-up monitoring-down kratos-down hydra-down app-down cleanup force-cleanup run dev
+.PHONY: run-full kratos-up hydra-up app-up infra-up monitoring-up monitoring-down kratos-down hydra-down app-down cleanup force-cleanup run dev mailhog-up mailhog-down
 
 COMPOSE = docker compose
 RUST_BIN = cargo
@@ -20,6 +20,12 @@ hydra-up:
 app-up:
 	$(COMPOSE) -f docker/docker-compose.app.yaml up -d --build
 
+mailhog-up:
+	$(COMPOSE) -f docker/docker-compose.mailhog.yaml up -d
+
+mailhog-down:
+	$(COMPOSE) -f docker/docker-compose.mailhog.yaml down -v
+
 monitoring-up:
 	$(COMPOSE) -f docker/docker-compose.monitoring.yaml up -d
 
@@ -36,7 +42,7 @@ app-down:
 	$(COMPOSE) -f docker/docker-compose.app.yaml down -v
 
 cleanup:
-	$(COMPOSE) -f docker/docker-compose.kratos.yaml -f docker/docker-compose.hydra.yaml -f docker/docker-compose.app.yaml -f docker/docker-compose.monitoring.yaml down -v
+	$(COMPOSE) -f docker/docker-compose.kratos.yaml -f docker/docker-compose.hydra.yaml -f docker/docker-compose.app.yaml -f docker/docker-compose.monitoring.yaml -f docker/docker-compose.mailhog.yaml down -v
 
 run:
 	$(RUST_BIN) $(RUST_ARGS)
