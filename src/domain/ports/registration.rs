@@ -14,7 +14,7 @@ impl From<RegisterInput> for RegistrationData {
     fn from(input: RegisterInput) -> Self {
         Self {
             email: input.email,
-            username: input.username,
+            username: input.username.unwrap_or_default(),
             password: input.password,
             geo_location: input.geo_location,
         }

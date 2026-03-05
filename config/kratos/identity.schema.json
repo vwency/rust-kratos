@@ -27,15 +27,12 @@
           }
         },
         "username": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Username",
-          "minLength": 3,
-          "maxLength": 20,
-          "pattern": "^[a-zA-Z0-9_-]+$",
           "ory.sh/kratos": {
             "credentials": {
               "password": {
-                "identifier": true
+                "identifier": false
               }
             }
           }

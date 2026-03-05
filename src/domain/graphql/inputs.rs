@@ -5,7 +5,7 @@ use serde_json::Value;
 #[derive(InputObject, Clone)]
 pub struct RegisterInput {
     pub email: String,
-    pub username: String,
+    pub username: Option<String>,
     pub password: String,
     pub geo_location: Option<String>,
 }
