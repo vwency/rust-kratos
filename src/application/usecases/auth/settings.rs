@@ -15,7 +15,7 @@ impl UpdateSettingsUseCase {
         &self,
         input: UpdateSettingsInput,
         cookie: &str,
-    ) -> Result<String, String> {
+    ) -> Result<(String, Vec<String>), String> {
         let flow_id = self
             .settings_port
             .initiate_settings(cookie)

@@ -44,7 +44,10 @@ pub async fn fetch_flow(
         let flow_id = location
             .split("flow=")
             .nth(1)
-            .ok_or("Flow ID not found in redirect URL")?;
+            .ok_or(format!("Flow ID not found in redirect URL: {}", location))?
+            .split('&')
+            .next()
+            .ok_or(format!("Flow ID not found in redirect URL: {}", location))?;
 
         let flow_url = format!(
             "{}/self-service/{}/flows?id={}",

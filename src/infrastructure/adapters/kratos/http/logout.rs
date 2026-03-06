@@ -48,6 +48,35 @@ impl KratosSessionAdapter {
             geo_location,
         })
     }
+
+    pub async fn is_recovery_session(&self, cookie: Option<&str>) -> bool {
+        let Some(cookie) = cookie else { return false };
+        let url =
+            format!("{}/sessions/whoami", self.client.public_url).replace("localhost", "127.0.0.1");
+        let Ok(response) = self
+            .client
+            .client
+            .get(&url)
+            .header(header::COOKIE, cookie)
+            .send()
+            .await
+        else {
+            return false;
+        };
+        let Ok(data) = response.json::<serde_json::Value>().await else {
+            return false;
+        };
+        data["authentication_methods"]
+            .as_array()
+            .map(|methods| {
+                methods.iter().any(|m| {
+                    m["method"].as_str() == Some("link_recovery")
+                        || m["method"].as_str() == Some("code_recovery")
+                })
+            })
+            .unwrap_or(false)
+    }
+
     async fn get_logout_flow(&self, cookie: &str) -> Result<String, SessionError> {
         let url = format!("{}/self-service/logout/browser", self.client.public_url);
         let url = url.replace("localhost", "127.0.0.1");

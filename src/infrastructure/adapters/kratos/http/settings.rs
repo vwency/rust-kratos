@@ -38,7 +38,7 @@ impl SettingsPort for KratosSettingsAdapter {
         flow_id: &str,
         data: SettingsData,
         cookie: &str,
-    ) -> Result<String, SettingsError> {
+    ) -> Result<(String, Vec<String>), SettingsError> {
         let flow = fetch_flow(
             &self.client.client,
             &self.client.public_url,
@@ -95,12 +95,15 @@ impl SettingsPort for KratosSettingsAdapter {
         .map_err(|e| SettingsError::NetworkError(e.to_string()))?;
 
         debug!("Settings response: {:?}", result.data);
+        debug!("Settings response cookies: {:?}", result.cookies);
 
-        result
+        let state = result
             .data
             .get("state")
             .and_then(|s| s.as_str())
             .map(|s| s.to_string())
-            .ok_or_else(|| SettingsError::UnknownError("No state in response".to_string()))
+            .ok_or_else(|| SettingsError::UnknownError("No state in response".to_string()))?;
+
+        Ok((state, result.cookies))
     }
 }

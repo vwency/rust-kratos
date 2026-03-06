@@ -63,5 +63,5 @@ pub trait SettingsPort: Send + Sync {
         flow_id: &str,
         data: SettingsData,
         cookie: &str,
-    ) -> Result<String, SettingsError>;
+    ) -> Result<(String, Vec<String>), SettingsError>;
 }

@@ -1,4 +1,5 @@
 use crate::domain::graphql::inputs::UpdateSettingsInput;
+use crate::infrastructure::adapters::graphql::cookies::ResponseCookies;
 use crate::infrastructure::di::container::UseCases;
 use async_graphql::{Context, Object, Result};
 use std::sync::Arc;
@@ -21,10 +22,18 @@ impl SettingsMutation {
             .map(|s| s.as_str())
             .unwrap_or_default();
 
-        use_cases
+        let (state, cookies) = use_cases
             .update_settings
             .execute(input, cookie)
             .await
-            .map_err(async_graphql::Error::new)
+            .map_err(async_graphql::Error::new)?;
+
+        if let Some(response_cookies) = ctx.data_opt::<ResponseCookies>() {
+            for cookie_str in cookies {
+                response_cookies.add_cookie(cookie_str).await;
+            }
+        }
+
+        Ok(state)
     }
 }

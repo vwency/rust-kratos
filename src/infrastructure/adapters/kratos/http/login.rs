@@ -28,22 +28,22 @@ impl KratosAuthenticationAdapter {
 impl AuthenticationPort for KratosAuthenticationAdapter {
     async fn initiate_login(&self, cookie: Option<&str>) -> Result<String, AuthError> {
         if self.session_adapter.check_active_session(cookie).await {
-            error!("Login attempt with an already active session");
-            return Err(AuthError::AlreadyLoggedIn);
+            if !self.session_adapter.is_recovery_session(cookie).await {
+                error!("Login attempt with an already active session");
+                return Err(AuthError::AlreadyLoggedIn);
+            }
         }
-        let flow = fetch_flow(
-            &self.client.client,
-            &self.client.public_url,
-            "login",
-            cookie,
-        )
-        .await
-        .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+
+        let flow = fetch_flow(&self.client.client, &self.client.public_url, "login", None)
+            .await
+            .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+
         flow.flow["id"]
             .as_str()
             .map(|s| s.to_string())
             .ok_or_else(|| AuthError::FlowNotFound)
     }
+
     async fn complete_login(
         &self,
         flow_id: &str,

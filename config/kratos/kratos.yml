@@ -61,12 +61,17 @@ selfservice:
   flows:
     error:
       ui_url: http://localhost:3000/error
+      
     settings:
-      ui_url: http://localhost:3000/settings
-      privileged_session_max_age: 15m
-      required_aal: highest_available
-      after:
-        default_browser_return_url: http://localhost:3000/login
+        ui_url: http://localhost:3000/settings
+        privileged_session_max_age: 15m
+        required_aal: highest_available
+        after:
+          default_browser_return_url: http://localhost:3000/login
+          password:
+            hooks:
+              - hook: revoke_active_sessions
+
     recovery:
       enabled: true
       ui_url: http://localhost:3000/recovery
